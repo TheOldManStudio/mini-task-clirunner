@@ -1,0 +1,60 @@
+{
+  "shuffleId": true,
+  "accountFile": "./accounts.csv",
+  "taskDefDir": "./src/tasks",
+  "reportDir": ".",
+
+  "chain": "auto",
+
+  "chains": {
+    "ethereum": {
+      "chainId": 1,
+      "network": "mainnet",
+      "rpc": "https://eth.melos.studio/",
+      "coin": "eth"
+    },
+
+    "bsc": {
+      "chainId": 56,
+      "chain": "BSC",
+      "network": "mainnet",
+      "rpc": "https://bsc-dataseed.binance.org/",
+      "coin": "bnb"
+    },
+
+    "cosmos": {
+      "chainId": "cosmoshub-4",
+      "network": "Cosmos Hub",
+      "rpc": "https://cosmoshub.validator.network",
+      "coin": "atom"
+    },
+
+    "celestia": {
+      "chainId": "",
+      "network": "Celestia",
+      "rpc": "",
+      "coin": "tia"
+    },
+
+    "osmo": {
+      "chainId": "",
+      "network": "Osmosis",
+      "rpc": "",
+      "coin": "osmo"
+    },
+
+    "inj": {
+      "chainId": "",
+      "network": "Injective",
+      "rpc": "",
+      "coin": "inj"
+    }
+  },
+
+  "deployed": {
+    "cosmos": {
+      "swiss": "cosmosvaloper1y0us8xvsvfvqkk9c6nt5cfyu5au5tww2ztve7q",
+      "node_guardian": "cosmosvaloper1jst8q8flpn94u9uvkpae8mrkk3a5pjhxx529z2"
+    }
+  }
+}

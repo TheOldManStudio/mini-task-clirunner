@@ -1,0 +1,171 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TaskCliRunner = void 0;
+const lodash_1 = __importDefault(require("lodash"));
+const yargs_1 = __importDefault(require("yargs/yargs"));
+const safe_1 = require("@colors/colors/safe");
+const id_parser_1 = require("./id_parser");
+const csv_1 = require("./csv");
+const error_1 = require("./error");
+const delay_1 = require("./delay");
+const random_1 = require("./random");
+// import { getAddressPrefix } from "../helper/crypto";
+const task_1 = require("./task");
+const config_1 = require("./config");
+const async_glob_1 = require("./async_glob");
+const buildRecordFilePath = (reportDir, taskId) => `${reportDir}/task_${taskId}.csv`;
+const readTaskRecord = (reportDir, userId, taskId) => __awaiter(void 0, void 0, void 0, function* () {
+    const reportFile = buildRecordFilePath(reportDir, taskId);
+    return (0, csv_1.findRecordById)(reportFile, userId);
+});
+class TaskCliRunner {
+    setPrerunPlugin(handler) {
+        this.hanlder = handler;
+    }
+    run() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const config = yield (0, config_1.loadConfig)();
+            // console.log(config);
+            let { chain, shuffleId, accountFile, taskDefDir, reportDir } = config;
+            const argv = (0, yargs_1.default)(process.argv.slice(2)).parse();
+            // console.log(argv);
+            if (argv["chain"])
+                chain = argv["chain"];
+            if (!chain)
+                throw new Error("no chainId");
+            if (argv.hasOwnProperty("shuffle")) {
+                shuffleId = argv["shuffle"];
+            }
+            const taskFileName = argv["_"][0];
+            if (!taskFileName)
+                throw new error_1.TaskFileNotFoundError();
+            const cwd = process.cwd();
+            const pat = `${cwd}/${taskDefDir}/${taskFileName}*.js`;
+            const files = yield (0, async_glob_1.asyncGlob)(pat);
+            // console.log(pat, files, process.cwd());
+            if ((files === null || files === void 0 ? void 0 : files.length) != 1) {
+                throw new error_1.TaskFileNotFoundError(taskFileName);
+            }
+            const path = files[0];
+            task_1.Task.tasklist = [];
+            require(path);
+            const tasks = task_1.Task.tasklist;
+            if (tasks.length <= 0)
+                throw new error_1.NoTaskDefinedError();
+            console.log(`Task: ${path}`);
+            let ids = (0, id_parser_1.parseIds)(argv["_"][1]);
+            if (ids.length == 0) {
+                console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
+                console.log("options: --no-shuffle --chainId <chain>");
+                return;
+            }
+            // randomize ids
+            if (shuffleId)
+                ids = lodash_1.default.shuffle(ids);
+            // remaining args to task
+            let taskArgs = [];
+            if (argv["_"].length > 2)
+                taskArgs = argv["_"].slice(2);
+            // read all accounts
+            const users = (0, csv_1.readRecords)(accountFile);
+            let chainObj;
+            if (chain != "auto") {
+                chainObj = (0, config_1.getChainInfo)(chain);
+                if (!chainObj)
+                    throw new Error(`unknown chain ${chain}`);
+            }
+            console.log(`Chain: ${(0, safe_1.green)(chainObj ? chainObj.chain : chain)}`);
+            for (let i = 0; i < ids.length; i++) {
+                const user = lodash_1.default.find(users, { id: ids[i] });
+                if (!user) {
+                    console.log(`no account found by id: ${ids[i]}`);
+                    continue;
+                }
+                console.log();
+                console.log((0, safe_1.green)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
+                // run middleware
+                if (this.hanlder) {
+                    try {
+                        yield this.hanlder(user, config);
+                    }
+                    catch (error) {
+                        console.log((0, safe_1.red)(error));
+                        continue;
+                    }
+                    chain = config.chain;
+                }
+                // prepare context
+                chainObj = (0, config_1.getChainInfo)(chain);
+                const deployedContracts = (0, config_1.getDeployedContracts)(chain);
+                const context = {
+                    chain,
+                    chainObj,
+                    deployedContracts,
+                    users,
+                    readTaskRecord: readTaskRecord.bind(this, reportDir, user.id),
+                };
+                for (let j = 0; j < tasks.length; j++) {
+                    const task = tasks[j];
+                    try {
+                        const { id, name, delayspec, argspec, func } = task;
+                        if (tasks.length > 1) {
+                            console.log(`-->subtask #${id}: ${name || ""}`);
+                        }
+                        const reportFile = buildRecordFilePath(reportDir, id);
+                        if ((0, csv_1.findRecordById)(reportFile, user.id)) {
+                            console.log(`already done`);
+                            continue;
+                        }
+                        // parse taskArgs
+                        let parsedArgs = {};
+                        if (argspec) {
+                            parsedArgs = (0, yargs_1.default)([...taskArgs])
+                                .command(`* ${argspec}`, false)
+                                .parse();
+                        }
+                        let result = yield func(user, context, parsedArgs);
+                        // persist result
+                        if (result) {
+                            if (typeof result != "object")
+                                throw new Error("task must return an object");
+                            yield (0, csv_1.addNewRecord)(reportFile, Object.assign({ id: user.id, address: user.address }, result));
+                        }
+                        // handling delay
+                        if (delayspec && (j < tasks.length - 1 || i < ids.length - 1)) {
+                            let sec = parseFloat(delayspec);
+                            if (!isNaN(sec)) {
+                                if (sec > 0)
+                                    yield (0, delay_1.delay)(sec * 1000);
+                            }
+                            else if (typeof delayspec == "string" && delayspec.startsWith("~")) {
+                                const avg = parseFloat(delayspec.substring(1));
+                                if (!isNaN(avg) && avg > 0) {
+                                    const min = Math.floor(avg / 2);
+                                    const max = Math.floor(avg * 2) - min;
+                                    yield (0, delay_1.delay)((0, random_1.randomInRange)(min, max) * 1000);
+                                }
+                            }
+                        }
+                    }
+                    catch (error) {
+                        console.warn(error);
+                        break;
+                    }
+                }
+            }
+        });
+    }
+}
+exports.TaskCliRunner = TaskCliRunner;

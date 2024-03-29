@@ -1,0 +1,32 @@
+{
+  "name": "mini-task-clirunner",
+  "version": "1.0.0",
+  "author": "zonghai@gmail.com",
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf ./dist && tsc"
+  },
+  "files": [
+    "dist"
+  ],
+  "typings": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/lodash": "^4.17.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.30",
+    "@types/yargs": "^17.0.32",
+    "mocha": "^10.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "@colors/colors": "^1.6.0",
+    "csv-parse": "^5.5.5",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^16.4.5",
+    "lodash": "^4.17.21",
+    "yargs": "^17.7.2"
+  }
+}
