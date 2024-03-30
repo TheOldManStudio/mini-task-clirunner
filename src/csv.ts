@@ -5,7 +5,7 @@ import { parse } from "csv-parse/sync";
 import { createObjectCsvWriter } from "csv-writer";
 import { TaskResult } from "task";
 
-export const readRecords = (file: string): any => {
+export const readRecords = (file: string) => {
   if (!fs.existsSync(file)) return [];
 
   return parse(fs.readFileSync(file), {

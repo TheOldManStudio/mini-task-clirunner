@@ -9,7 +9,6 @@ import { NoTaskDefinedError, TaskFileNotFoundError } from "./error";
 import { delay } from "./delay";
 import { randomInRange } from "./random";
 
-// import { getAddressPrefix } from "../helper/crypto";
 import { Task } from "./task";
 import { TaskConfig, getChainInfo, getDeployedContracts, loadConfig } from "./config";
 import { asyncGlob } from "./async_glob";
@@ -126,6 +125,7 @@ export class TaskCliRunner {
       }
 
       // prepare context
+
       chainObj = getChainInfo(chain);
       const deployedContracts = getDeployedContracts(chain);
       const context = {
