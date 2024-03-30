@@ -77,8 +77,9 @@ export class TaskCliRunner {
 
     let ids = parseIds(argv["_"][1]);
     if (ids.length == 0) {
+      console.log("Usage:");
       console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
-      console.log("options: --no-shuffle --chainId <chain>");
+      console.log("options: --no-shuffle --chain <chain>");
       return;
     }
 

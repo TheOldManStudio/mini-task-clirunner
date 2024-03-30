@@ -21,7 +21,6 @@ const csv_1 = require("./csv");
 const error_1 = require("./error");
 const delay_1 = require("./delay");
 const random_1 = require("./random");
-// import { getAddressPrefix } from "../helper/crypto";
 const task_1 = require("./task");
 const config_1 = require("./config");
 const async_glob_1 = require("./async_glob");
@@ -67,8 +66,9 @@ class TaskCliRunner {
             console.log(`Task: ${path}`);
             let ids = (0, id_parser_1.parseIds)(argv["_"][1]);
             if (ids.length == 0) {
+                console.log("Usage:");
                 console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
-                console.log("options: --no-shuffle --chainId <chain>");
+                console.log("options: --no-shuffle --chain <chain>");
                 return;
             }
             // randomize ids
