@@ -116,13 +116,15 @@ export class TaskCliRunner {
       // run middleware
       if (this.hanlder) {
         try {
-          await this.hanlder(user, config);
+          const cloneConfig = { ...config };
+          const cloneUser = { ...user };
+          await this.hanlder(cloneUser, cloneConfig);
+
+          chain = cloneConfig.chain;
         } catch (error: any) {
           console.log(red(error));
           continue;
         }
-
-        chain = config.chain;
       }
 
       // prepare context

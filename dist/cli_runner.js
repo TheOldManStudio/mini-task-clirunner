@@ -98,13 +98,15 @@ class TaskCliRunner {
                 // run middleware
                 if (this.hanlder) {
                     try {
-                        yield this.hanlder(user, config);
+                        const cloneConfig = Object.assign({}, config);
+                        const cloneUser = Object.assign({}, user);
+                        yield this.hanlder(cloneUser, cloneConfig);
+                        chain = cloneConfig.chain;
                     }
                     catch (error) {
                         console.log((0, safe_1.red)(error));
                         continue;
                     }
-                    chain = config.chain;
                 }
                 // prepare context
                 chainObj = (0, config_1.getChainInfo)(chain);
