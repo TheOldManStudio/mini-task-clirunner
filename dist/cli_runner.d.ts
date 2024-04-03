@@ -5,7 +5,7 @@ import { Account } from "./index";
  */
 export type PrerunPlugin = (user: Account, config: TaskConfig) => Promise<void>;
 export declare class TaskCliRunner {
-    private hanlder;
+    private hanlder?;
     setPrerunPlugin(handler: PrerunPlugin): void;
     run(): Promise<void>;
 }

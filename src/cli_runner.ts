@@ -1,6 +1,6 @@
 import _ from "lodash";
 import yargs from "yargs/yargs";
-import { green, red, yellow, cyan } from "@colors/colors/safe";
+import { green, red, yellow } from "@colors/colors/safe";
 
 import { parseIds } from "./id_parser";
 import { addNewRecord, readRecords, findRecordById } from "./csv";
@@ -28,7 +28,7 @@ const readTaskRecord = async (reportDir: string, userId: number, taskId: number)
 };
 
 export class TaskCliRunner {
-  private hanlder: PrerunPlugin;
+  private hanlder?: PrerunPlugin;
 
   public setPrerunPlugin(handler: PrerunPlugin) {
     this.hanlder = handler;
@@ -145,12 +145,12 @@ export class TaskCliRunner {
           const { id, name, delayspec, argspec, func } = task;
 
           if (tasks.length > 1) {
-            console.log(cyan(`-->subtask #${id}: ${name || ""}`));
+            console.log(yellow(`-->subtask #${id}: ${name || ""}`));
           }
 
           const reportFile = buildRecordFilePath(reportDir, id);
           if (findRecordById(reportFile, user.id)) {
-            console.log(`already done`);
+            console.log("already", green("done"));
             continue;
           }
 
@@ -169,6 +169,8 @@ export class TaskCliRunner {
             if (typeof result != "object") throw new Error("task must return an object");
             await addNewRecord(reportFile, { id: user.id, address: user.address, ...result });
           }
+
+          console.log(green("done"));
 
           // handling delay
           if (delayspec && (j < tasks.length - 1 || i < ids.length - 1)) {

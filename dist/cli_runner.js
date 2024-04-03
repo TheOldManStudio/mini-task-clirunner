@@ -123,11 +123,11 @@ class TaskCliRunner {
                     try {
                         const { id, name, delayspec, argspec, func } = task;
                         if (tasks.length > 1) {
-                            console.log((0, safe_1.cyan)(`-->subtask #${id}: ${name || ""}`));
+                            console.log((0, safe_1.yellow)(`-->subtask #${id}: ${name || ""}`));
                         }
                         const reportFile = buildRecordFilePath(reportDir, id);
                         if ((0, csv_1.findRecordById)(reportFile, user.id)) {
-                            console.log(`already done`);
+                            console.log("already", (0, safe_1.green)("done"));
                             continue;
                         }
                         // parse taskArgs
@@ -144,6 +144,7 @@ class TaskCliRunner {
                                 throw new Error("task must return an object");
                             yield (0, csv_1.addNewRecord)(reportFile, Object.assign({ id: user.id, address: user.address }, result));
                         }
+                        console.log((0, safe_1.green)("done"));
                         // handling delay
                         if (delayspec && (j < tasks.length - 1 || i < ids.length - 1)) {
                             let sec = parseFloat(delayspec);
