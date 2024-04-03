@@ -123,7 +123,7 @@ class TaskCliRunner {
                     try {
                         const { id, name, delayspec, argspec, func } = task;
                         if (tasks.length > 1) {
-                            console.log(`-->subtask #${id}: ${name || ""}`);
+                            console.log((0, safe_1.cyan)(`-->subtask #${id}: ${name || ""}`));
                         }
                         const reportFile = buildRecordFilePath(reportDir, id);
                         if ((0, csv_1.findRecordById)(reportFile, user.id)) {

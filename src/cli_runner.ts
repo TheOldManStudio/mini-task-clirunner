@@ -1,6 +1,6 @@
 import _ from "lodash";
 import yargs from "yargs/yargs";
-import { green, red, yellow } from "@colors/colors/safe";
+import { green, red, yellow, cyan } from "@colors/colors/safe";
 
 import { parseIds } from "./id_parser";
 import { addNewRecord, readRecords, findRecordById } from "./csv";
@@ -145,7 +145,7 @@ export class TaskCliRunner {
           const { id, name, delayspec, argspec, func } = task;
 
           if (tasks.length > 1) {
-            console.log(`-->subtask #${id}: ${name || ""}`);
+            console.log(cyan(`-->subtask #${id}: ${name || ""}`));
           }
 
           const reportFile = buildRecordFilePath(reportDir, id);
