@@ -38,6 +38,7 @@ class TaskCliRunner {
             const config = yield (0, config_1.loadConfig)();
             // console.log(config);
             let { chain, shuffleId, accountFile, taskDefDir, reportDir } = config;
+            let force = false;
             const argv = yield (0, yargs_1.default)(process.argv.slice(2)).parse();
             // console.log(argv);
             if (argv.chain)
@@ -46,6 +47,9 @@ class TaskCliRunner {
                 throw new Error("no chainId");
             if (argv.hasOwnProperty("shuffle")) {
                 shuffleId = argv.shuffle;
+            }
+            if (argv.hasOwnProperty("force")) {
+                force = true;
             }
             const taskFileName = argv._[0];
             if (!taskFileName)
@@ -126,7 +130,7 @@ class TaskCliRunner {
                             console.log((0, safe_1.yellow)(`-->subtask #${id}: ${name || ""}`));
                         }
                         const reportFile = buildRecordFilePath(reportDir, id);
-                        if ((0, csv_1.findRecordById)(reportFile, user.id)) {
+                        if (!force && (0, csv_1.findRecordById)(reportFile, user.id)) {
                             console.log("already", (0, safe_1.green)("done"));
                             continue;
                         }

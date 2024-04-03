@@ -40,6 +40,7 @@ export class TaskCliRunner {
     // console.log(config);
 
     let { chain, shuffleId, accountFile, taskDefDir, reportDir } = config;
+    let force = false;
 
     const argv = await yargs(process.argv.slice(2)).parse();
 
@@ -50,6 +51,10 @@ export class TaskCliRunner {
 
     if (argv.hasOwnProperty("shuffle")) {
       shuffleId = argv.shuffle as boolean;
+    }
+
+    if (argv.hasOwnProperty("force")) {
+      force = true;
     }
 
     const taskFileName = argv._[0];
@@ -149,7 +154,7 @@ export class TaskCliRunner {
           }
 
           const reportFile = buildRecordFilePath(reportDir, id);
-          if (findRecordById(reportFile, user.id)) {
+          if (!force && findRecordById(reportFile, user.id)) {
             console.log("already", green("done"));
             continue;
           }
