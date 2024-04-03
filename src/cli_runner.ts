@@ -12,7 +12,7 @@ import { randomInRange } from "./random";
 import { Task } from "./task";
 import { TaskConfig, getChainInfo, getDeployedContracts, loadConfig } from "./config";
 import { asyncGlob } from "./async_glob";
-import { Account, Chain } from "./index";
+import { Account, Chain, Context } from "./index";
 
 //
 /**
@@ -136,13 +136,6 @@ export class TaskCliRunner {
 
       chainObj = getChainInfo(chain);
       const deployedContracts = getDeployedContracts(chain);
-      const context = {
-        chain,
-        chainObj,
-        deployedContracts,
-        users,
-        readTaskRecord: readTaskRecord.bind(this, reportDir, user.id),
-      };
 
       for (let j = 0; j < tasks.length; j++) {
         const task = tasks[j];
@@ -158,6 +151,16 @@ export class TaskCliRunner {
             console.log("already", green("done"));
             continue;
           }
+
+          const context: Context = {
+            id,
+            name,
+            chain,
+            chainObj,
+            deployedContracts,
+            users,
+            readTaskRecordById: readTaskRecord.bind(this, reportDir, user.id),
+          };
 
           // parse taskArgs
           let parsedArgs = {};

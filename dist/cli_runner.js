@@ -115,13 +115,6 @@ class TaskCliRunner {
                 // prepare context
                 chainObj = (0, config_1.getChainInfo)(chain);
                 const deployedContracts = (0, config_1.getDeployedContracts)(chain);
-                const context = {
-                    chain,
-                    chainObj,
-                    deployedContracts,
-                    users,
-                    readTaskRecord: readTaskRecord.bind(this, reportDir, user.id),
-                };
                 for (let j = 0; j < tasks.length; j++) {
                     const task = tasks[j];
                     try {
@@ -134,6 +127,15 @@ class TaskCliRunner {
                             console.log("already", (0, safe_1.green)("done"));
                             continue;
                         }
+                        const context = {
+                            id,
+                            name,
+                            chain,
+                            chainObj,
+                            deployedContracts,
+                            users,
+                            readTaskRecordById: readTaskRecord.bind(this, reportDir, user.id),
+                        };
                         // parse taskArgs
                         let parsedArgs = {};
                         if (argspec) {

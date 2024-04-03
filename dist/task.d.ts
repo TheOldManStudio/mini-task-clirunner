@@ -11,8 +11,10 @@ export type Context = {
     deployedContracts: {
         [name: string]: string;
     };
-    readTaskRecord: (taskId: string | number) => Promise<TaskResult>;
+    readTaskRecordById: (taskId: string | number) => Promise<TaskResult>;
     users: Account[];
+    id: number;
+    name: string;
 };
 export type TaskAction = (user: Account, ctx: Context, args: Arg) => Promise<TaskResult>;
 export declare class Task {
