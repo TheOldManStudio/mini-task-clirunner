@@ -1,14 +1,14 @@
 import { Chain } from "./index";
 export type TaskConfig = {
-    shuffleId?: boolean;
-    chain?: string | number | "auto";
+    shuffleId: boolean;
+    chain: string | number | "auto";
     taskDefDir: string;
     accountFile: string;
     reportDir: string;
-    chains?: {
+    chains: {
         [chain: number | string]: Chain;
     };
-    deployed?: {
+    deployed: {
         [chain: number | string]: {
             [name: string]: string;
         };

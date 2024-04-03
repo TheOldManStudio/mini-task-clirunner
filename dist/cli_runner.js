@@ -38,16 +38,16 @@ class TaskCliRunner {
             const config = yield (0, config_1.loadConfig)();
             // console.log(config);
             let { chain, shuffleId, accountFile, taskDefDir, reportDir } = config;
-            const argv = (0, yargs_1.default)(process.argv.slice(2)).parse();
+            const argv = yield (0, yargs_1.default)(process.argv.slice(2)).parse();
             // console.log(argv);
-            if (argv["chain"])
-                chain = argv["chain"];
+            if (argv.chain)
+                chain = argv.chain;
             if (!chain)
                 throw new Error("no chainId");
             if (argv.hasOwnProperty("shuffle")) {
-                shuffleId = argv["shuffle"];
+                shuffleId = argv.shuffle;
             }
-            const taskFileName = argv["_"][0];
+            const taskFileName = argv._[0];
             if (!taskFileName)
                 throw new error_1.TaskFileNotFoundError();
             const cwd = process.cwd();
@@ -64,7 +64,7 @@ class TaskCliRunner {
             if (tasks.length <= 0)
                 throw new error_1.NoTaskDefinedError();
             console.log(`Task: ${path}`);
-            let ids = (0, id_parser_1.parseIds)(argv["_"][1]);
+            let ids = (0, id_parser_1.parseIds)(argv._[1]);
             if (ids.length == 0) {
                 console.log("Usage:");
                 console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
@@ -76,8 +76,8 @@ class TaskCliRunner {
                 ids = lodash_1.default.shuffle(ids);
             // remaining args to task
             let taskArgs = [];
-            if (argv["_"].length > 2)
-                taskArgs = argv["_"].slice(2);
+            if (argv._.length > 2)
+                taskArgs = argv._.slice(2);
             // read all accounts
             const users = (0, csv_1.readRecords)(accountFile);
             let chainObj;
@@ -133,7 +133,7 @@ class TaskCliRunner {
                         // parse taskArgs
                         let parsedArgs = {};
                         if (argspec) {
-                            parsedArgs = (0, yargs_1.default)([...taskArgs])
+                            parsedArgs = (0, yargs_1.default)(taskArgs.map((a) => a.toString()))
                                 .command(`* ${argspec}`, false)
                                 .parse();
                         }

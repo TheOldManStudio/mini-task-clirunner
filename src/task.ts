@@ -20,8 +20,8 @@ export type TaskAction = (user: Account, ctx: Context, args: Arg) => Promise<Tas
 export class Task {
   public id: number;
   public name: string | undefined;
-  public delayspec: string | number;
-  public argspec: string;
+  public delayspec?: string | number;
+  public argspec?: string;
 
   public func: TaskAction;
 

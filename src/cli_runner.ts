@@ -20,9 +20,9 @@ import { Account, Chain } from "./index";
  */
 export type PrerunPlugin = (user: Account, config: TaskConfig) => Promise<void>;
 
-const buildRecordFilePath = (reportDir: string, taskId: number) => `${reportDir}/task_${taskId}.csv`;
+const buildRecordFilePath = (reportDir: string, taskId: number | string) => `${reportDir}/task_${taskId}.csv`;
 
-const readTaskRecord = async (reportDir: string, userId: number, taskId: number) => {
+const readTaskRecord = async (reportDir: string, userId: number, taskId: number | string) => {
   const reportFile = buildRecordFilePath(reportDir, taskId);
   return findRecordById(reportFile, userId);
 };
@@ -41,18 +41,18 @@ export class TaskCliRunner {
 
     let { chain, shuffleId, accountFile, taskDefDir, reportDir } = config;
 
-    const argv = yargs(process.argv.slice(2)).parse();
+    const argv = await yargs(process.argv.slice(2)).parse();
 
     // console.log(argv);
 
-    if (argv["chain"]) chain = argv["chain"];
+    if (argv.chain) chain = argv.chain as string;
     if (!chain) throw new Error("no chainId");
 
     if (argv.hasOwnProperty("shuffle")) {
-      shuffleId = argv["shuffle"];
+      shuffleId = argv.shuffle as boolean;
     }
 
-    const taskFileName = argv["_"][0];
+    const taskFileName = argv._[0];
     if (!taskFileName) throw new TaskFileNotFoundError();
 
     const cwd = process.cwd();
@@ -62,7 +62,7 @@ export class TaskCliRunner {
     // console.log(pat, files, process.cwd());
 
     if (files?.length != 1) {
-      throw new TaskFileNotFoundError(taskFileName);
+      throw new TaskFileNotFoundError(taskFileName as string);
     }
 
     const path = files[0];
@@ -75,7 +75,7 @@ export class TaskCliRunner {
 
     console.log(`Task: ${path}`);
 
-    let ids = parseIds(argv["_"][1]);
+    let ids = parseIds(argv._[1] as string);
     if (ids.length == 0) {
       console.log("Usage:");
       console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
@@ -87,8 +87,8 @@ export class TaskCliRunner {
     if (shuffleId) ids = _.shuffle(ids);
 
     // remaining args to task
-    let taskArgs = [];
-    if (argv["_"].length > 2) taskArgs = argv["_"].slice(2);
+    let taskArgs: (string | number)[] = [];
+    if (argv._.length > 2) taskArgs = argv._.slice(2);
 
     // read all accounts
     const users = readRecords(accountFile);
@@ -157,7 +157,7 @@ export class TaskCliRunner {
           // parse taskArgs
           let parsedArgs = {};
           if (argspec) {
-            parsedArgs = yargs([...taskArgs])
+            parsedArgs = yargs(taskArgs.map((a) => a.toString()))
               .command(`* ${argspec}`, false)
               .parse();
           }

@@ -3,14 +3,14 @@ import { ConfigFileNotExistsError } from "./error";
 import { Chain } from "./index";
 
 export type TaskConfig = {
-  shuffleId?: boolean;
-  chain?: string | number | "auto";
+  shuffleId: boolean;
+  chain: string | number | "auto";
   taskDefDir: string;
   accountFile: string;
   reportDir: string;
 
-  chains?: { [chain: number | string]: Chain };
-  deployed?: { [chain: number | string]: { [name: string]: string } };
+  chains: { [chain: number | string]: Chain };
+  deployed: { [chain: number | string]: { [name: string]: string } };
 };
 
 export const loadConfig = async (): Promise<TaskConfig> => {
