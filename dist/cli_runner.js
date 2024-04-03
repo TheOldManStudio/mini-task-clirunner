@@ -115,6 +115,15 @@ class TaskCliRunner {
                 // prepare context
                 chainObj = (0, config_1.getChainInfo)(chain);
                 const deployedContracts = (0, config_1.getDeployedContracts)(chain);
+                const context = {
+                    id: -9999,
+                    name: "",
+                    chain,
+                    chainObj,
+                    deployedContracts,
+                    users,
+                    readTaskRecordById: readTaskRecord.bind(this, reportDir, user.id),
+                };
                 for (let j = 0; j < tasks.length; j++) {
                     const task = tasks[j];
                     try {
@@ -127,15 +136,8 @@ class TaskCliRunner {
                             console.log("already", (0, safe_1.green)("done"));
                             continue;
                         }
-                        const context = {
-                            id,
-                            name,
-                            chain,
-                            chainObj,
-                            deployedContracts,
-                            users,
-                            readTaskRecordById: readTaskRecord.bind(this, reportDir, user.id),
-                        };
+                        context.id = id;
+                        context.name = name;
                         // parse taskArgs
                         let parsedArgs = {};
                         if (argspec) {
@@ -147,7 +149,7 @@ class TaskCliRunner {
                         // persist result
                         if (result) {
                             if (typeof result != "object")
-                                throw new Error("task must return an object");
+                                throw new Error("task must return an key-value object {}");
                             yield (0, csv_1.addNewRecord)(reportFile, Object.assign({ id: user.id, address: user.address }, result));
                         }
                         console.log((0, safe_1.green)("done"));

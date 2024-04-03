@@ -137,6 +137,16 @@ export class TaskCliRunner {
       chainObj = getChainInfo(chain);
       const deployedContracts = getDeployedContracts(chain);
 
+      const context: Context = {
+        id: -9999,
+        name: "",
+        chain,
+        chainObj,
+        deployedContracts,
+        users,
+        readTaskRecordById: readTaskRecord.bind(this, reportDir, user.id),
+      };
+
       for (let j = 0; j < tasks.length; j++) {
         const task = tasks[j];
         try {
@@ -152,15 +162,8 @@ export class TaskCliRunner {
             continue;
           }
 
-          const context: Context = {
-            id,
-            name,
-            chain,
-            chainObj,
-            deployedContracts,
-            users,
-            readTaskRecordById: readTaskRecord.bind(this, reportDir, user.id),
-          };
+          context.id = id;
+          context.name = name;
 
           // parse taskArgs
           let parsedArgs = {};
@@ -174,7 +177,7 @@ export class TaskCliRunner {
 
           // persist result
           if (result) {
-            if (typeof result != "object") throw new Error("task must return an object");
+            if (typeof result != "object") throw new Error("task must return an key-value object {}");
             await addNewRecord(reportFile, { id: user.id, address: user.address, ...result });
           }
 
