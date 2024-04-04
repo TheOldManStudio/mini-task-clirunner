@@ -10,7 +10,7 @@ export type Context = {
 
   deployedContracts: { [name: string]: string };
 
-  readTaskRecordById: (taskId: string | number) => Promise<TaskResult>;
+  readTaskRecordById: (taskId: number) => Promise<TaskResult>;
 
   users: Account[];
 
@@ -39,7 +39,7 @@ export class Task {
     return new Task(id, name);
   }
 
-  cooldown(delay: string | number) {
+  public cooldown(delay: string | number) {
     this.delayspec = delay;
     return this;
   }
@@ -51,12 +51,12 @@ export class Task {
    * @dev [name] - optional
    * @returns
    */
-  args(spec: string) {
+  public args(spec: string) {
     this.argspec = spec;
     return this;
   }
 
-  action(func: TaskAction) {
+  public action(func: TaskAction) {
     if (!func) {
       throw new Error("task needs an aysnc func");
     }

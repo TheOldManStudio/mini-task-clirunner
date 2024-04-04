@@ -20,9 +20,9 @@ import { Account, Chain, Context } from "./index";
  */
 export type PrerunPlugin = (user: Account, config: TaskConfig) => Promise<void>;
 
-const buildRecordFilePath = (reportDir: string, taskId: number | string) => `${reportDir}/task_${taskId}.csv`;
+const buildRecordFilePath = (reportDir: string, taskId: number) => `${reportDir}/task_${taskId}.csv`;
 
-const readTaskRecord = async (reportDir: string, userId: number, taskId: number | string) => {
+const readTaskRecord = async (reportDir: string, userId: number, taskId: number) => {
   const reportFile = buildRecordFilePath(reportDir, taskId);
   return findRecordById(reportFile, userId);
 };

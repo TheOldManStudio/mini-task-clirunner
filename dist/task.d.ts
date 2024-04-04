@@ -11,7 +11,7 @@ export type Context = {
     deployedContracts: {
         [name: string]: string;
     };
-    readTaskRecordById: (taskId: string | number) => Promise<TaskResult>;
+    readTaskRecordById: (taskId: number) => Promise<TaskResult>;
     users: Account[];
     id: number;
     name: string;
