@@ -4,13 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDeployedContracts = exports.getChainInfo = exports.loadConfig = void 0;
-const glob_1 = __importDefault(require("glob"));
+const fast_glob_1 = __importDefault(require("fast-glob"));
 const error_1 = require("./error");
 const loadConfig = () => {
     const configFile = "./taskconfig.json";
     const cwd = process.cwd();
     const pat = `${cwd}/${configFile}`;
-    const files = glob_1.default.sync(pat);
+    const files = fast_glob_1.default.sync(pat);
     // console.log(pat, files, process.cwd());
     if ((files === null || files === void 0 ? void 0 : files.length) != 1) {
         throw new error_1.ConfigFileNotExistsError();

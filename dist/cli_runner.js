@@ -16,7 +16,7 @@ exports.TaskCliRunner = void 0;
 const lodash_1 = __importDefault(require("lodash"));
 const yargs_1 = __importDefault(require("yargs/yargs"));
 const safe_1 = require("@colors/colors/safe");
-const glob_1 = __importDefault(require("glob"));
+const fast_glob_1 = __importDefault(require("fast-glob"));
 const id_parser_1 = require("./id_parser");
 const csv_1 = require("./csv");
 const error_1 = require("./error");
@@ -56,7 +56,7 @@ class TaskCliRunner {
                 throw new error_1.TaskFileNotFoundError();
             const cwd = process.cwd();
             const pat = `${cwd}/${taskDefDir}/${taskFileName}*.js`;
-            const files = yield glob_1.default.__promisify__(pat);
+            const files = yield fast_glob_1.default.async(pat);
             // console.log(pat, files, process.cwd());
             if ((files === null || files === void 0 ? void 0 : files.length) != 1) {
                 throw new error_1.TaskFileNotFoundError(taskFileName);

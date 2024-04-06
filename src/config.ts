@@ -1,4 +1,4 @@
-import G from "glob";
+import glob from "fast-glob";
 
 import { ConfigFileNotExistsError } from "./error";
 import { Chain } from "./index";
@@ -20,7 +20,7 @@ export const loadConfig = (): TaskConfig => {
   const cwd = process.cwd();
   const pat = `${cwd}/${configFile}`;
 
-  const files = G.sync(pat);
+  const files = glob.sync(pat);
   // console.log(pat, files, process.cwd());
 
   if (files?.length != 1) {

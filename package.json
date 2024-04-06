@@ -13,7 +13,6 @@
   "typings": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "devDependencies": {
-    "@types/glob": "^8.1.0",
     "@types/lodash": "^4.17.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.30",
@@ -27,6 +26,7 @@
     "csv-parse": "^5.5.5",
     "csv-writer": "^1.6.0",
     "dotenv": "^16.4.5",
+    "fast-glob": "^3.3.2",
     "lodash": "^4.17.21",
     "yargs": "^17.7.2"
   }

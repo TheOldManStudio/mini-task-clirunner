@@ -1,7 +1,7 @@
 import _ from "lodash";
 import yargs from "yargs/yargs";
 import { green, red, yellow } from "@colors/colors/safe";
-import G from "glob";
+import glob from "fast-glob";
 
 import { parseIds } from "./id_parser";
 import { addNewRecord, readRecords, findRecordById } from "./csv";
@@ -64,7 +64,7 @@ export class TaskCliRunner {
     const cwd = process.cwd();
     const pat = `${cwd}/${taskDefDir}/${taskFileName}*.js`;
 
-    const files = await G.__promisify__(pat);
+    const files = await glob.async(pat);
     // console.log(pat, files, process.cwd());
 
     if (files?.length != 1) {
