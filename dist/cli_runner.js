@@ -16,6 +16,7 @@ exports.TaskCliRunner = void 0;
 const lodash_1 = __importDefault(require("lodash"));
 const yargs_1 = __importDefault(require("yargs/yargs"));
 const safe_1 = require("@colors/colors/safe");
+const glob_1 = __importDefault(require("glob"));
 const id_parser_1 = require("./id_parser");
 const csv_1 = require("./csv");
 const error_1 = require("./error");
@@ -23,7 +24,6 @@ const delay_1 = require("./delay");
 const random_1 = require("./random");
 const task_1 = require("./task");
 const config_1 = require("./config");
-const async_glob_1 = require("./async_glob");
 const buildRecordFilePath = (reportDir, taskId) => `${reportDir}/task_${taskId}.csv`;
 const readTaskRecord = (reportDir, userId, taskId) => __awaiter(void 0, void 0, void 0, function* () {
     const reportFile = buildRecordFilePath(reportDir, taskId);
@@ -35,7 +35,7 @@ class TaskCliRunner {
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            const config = yield (0, config_1.loadConfig)();
+            const config = (0, config_1.loadConfig)();
             // console.log(config);
             let { chain, shuffleId, accountFile, taskDefDir, reportDir } = config;
             let force = false;
@@ -56,7 +56,7 @@ class TaskCliRunner {
                 throw new error_1.TaskFileNotFoundError();
             const cwd = process.cwd();
             const pat = `${cwd}/${taskDefDir}/${taskFileName}*.js`;
-            const files = yield (0, async_glob_1.asyncGlob)(pat);
+            const files = yield glob_1.default.__promisify__(pat);
             // console.log(pat, files, process.cwd());
             if ((files === null || files === void 0 ? void 0 : files.length) != 1) {
                 throw new error_1.TaskFileNotFoundError(taskFileName);

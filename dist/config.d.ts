@@ -14,7 +14,7 @@ export type TaskConfig = {
         };
     };
 };
-export declare const loadConfig: () => Promise<TaskConfig>;
+export declare const loadConfig: () => TaskConfig;
 export declare const getChainInfo: (chain: string | number) => Chain;
 export declare const getDeployedContracts: (chain: string | number) => {
     [name: string]: string;

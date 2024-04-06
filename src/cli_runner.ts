@@ -1,6 +1,7 @@
 import _ from "lodash";
 import yargs from "yargs/yargs";
 import { green, red, yellow } from "@colors/colors/safe";
+import G from "glob";
 
 import { parseIds } from "./id_parser";
 import { addNewRecord, readRecords, findRecordById } from "./csv";
@@ -11,7 +12,7 @@ import { randomInRange } from "./random";
 
 import { Task } from "./task";
 import { TaskConfig, getChainInfo, getDeployedContracts, loadConfig } from "./config";
-import { asyncGlob } from "./async_glob";
+
 import { Account, Chain, Context } from "./index";
 
 //
@@ -35,7 +36,7 @@ export class TaskCliRunner {
   }
 
   public async run() {
-    const config = await loadConfig();
+    const config = loadConfig();
 
     // console.log(config);
 
@@ -63,7 +64,7 @@ export class TaskCliRunner {
     const cwd = process.cwd();
     const pat = `${cwd}/${taskDefDir}/${taskFileName}*.js`;
 
-    const files = await asyncGlob(pat);
+    const files = await G.__promisify__(pat);
     // console.log(pat, files, process.cwd());
 
     if (files?.length != 1) {

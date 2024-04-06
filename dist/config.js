@@ -1,22 +1,16 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDeployedContracts = exports.getChainInfo = exports.loadConfig = void 0;
-const async_glob_1 = require("./async_glob");
+const glob_1 = __importDefault(require("glob"));
 const error_1 = require("./error");
-const loadConfig = () => __awaiter(void 0, void 0, void 0, function* () {
+const loadConfig = () => {
     const configFile = "./taskconfig.json";
     const cwd = process.cwd();
     const pat = `${cwd}/${configFile}`;
-    const files = yield (0, async_glob_1.asyncGlob)(pat);
+    const files = glob_1.default.sync(pat);
     // console.log(pat, files, process.cwd());
     if ((files === null || files === void 0 ? void 0 : files.length) != 1) {
         throw new error_1.ConfigFileNotExistsError();
@@ -32,17 +26,17 @@ const loadConfig = () => __awaiter(void 0, void 0, void 0, function* () {
     configObj.chain = configObj.chain || "auto";
     cached = configObj;
     return cached;
-});
+};
 exports.loadConfig = loadConfig;
 const getChainInfo = (chain) => {
     if (!cached)
-        throw Error("");
+        (0, exports.loadConfig)();
     return cached.chains[chain];
 };
 exports.getChainInfo = getChainInfo;
 const getDeployedContracts = (chain) => {
     if (!cached)
-        throw Error("");
+        (0, exports.loadConfig)();
     return cached.deployed[chain];
 };
 exports.getDeployedContracts = getDeployedContracts;

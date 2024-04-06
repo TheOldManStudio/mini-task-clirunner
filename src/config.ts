@@ -1,4 +1,5 @@
-import { asyncGlob } from "./async_glob";
+import G from "glob";
+
 import { ConfigFileNotExistsError } from "./error";
 import { Chain } from "./index";
 
@@ -13,13 +14,13 @@ export type TaskConfig = {
   deployed: { [chain: number | string]: { [name: string]: string } };
 };
 
-export const loadConfig = async (): Promise<TaskConfig> => {
+export const loadConfig = (): TaskConfig => {
   const configFile = "./taskconfig.json";
 
   const cwd = process.cwd();
   const pat = `${cwd}/${configFile}`;
 
-  const files = await asyncGlob(pat);
+  const files = G.sync(pat);
   // console.log(pat, files, process.cwd());
 
   if (files?.length != 1) {
@@ -47,12 +48,12 @@ export const loadConfig = async (): Promise<TaskConfig> => {
 };
 
 export const getChainInfo = (chain: string | number) => {
-  if (!cached) throw Error("");
+  if (!cached) loadConfig();
   return cached.chains[chain];
 };
 
 export const getDeployedContracts = (chain: string | number) => {
-  if (!cached) throw Error("");
+  if (!cached) loadConfig();
   return cached.deployed[chain];
 };
 
