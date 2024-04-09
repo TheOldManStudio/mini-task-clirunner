@@ -174,7 +174,7 @@ export class TaskCliRunner {
               .parse();
           }
 
-          let timeoutId;
+          let timeoutId: string | number | NodeJS.Timeout;
           const timeout = (millis: number) =>
             new Promise((resolve, reject) => {
               timeoutId = setTimeout(reject, millis, "timeout");
@@ -186,7 +186,7 @@ export class TaskCliRunner {
 
           // persist result
           if (result) {
-            if (typeof result != "object") throw new Error("task must return an key-value object {}");
+            if (typeof result != "object") throw new Error("result should be a key-value object {}");
             await addNewRecord(reportFile, { id: user.id, address: user.address, ...result });
           }
 

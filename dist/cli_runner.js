@@ -158,7 +158,7 @@ class TaskCliRunner {
                         // persist result
                         if (result) {
                             if (typeof result != "object")
-                                throw new Error("task must return an key-value object {}");
+                                throw new Error("result should be a key-value object {}");
                             yield (0, csv_1.addNewRecord)(reportFile, Object.assign({ id: user.id, address: user.address }, result));
                         }
                         console.log((0, safe_1.green)("done"));
