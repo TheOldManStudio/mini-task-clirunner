@@ -87,7 +87,7 @@ class TaskCliRunner {
             if (tasks.length <= 0)
                 throw new error_1.NoTaskDefinedError();
             console.log(`Task: ${path}`);
-            let ids = (0, id_parser_1.parseIds)(argv._[1]);
+            let ids = (0, id_parser_1.parseIds)(argv._[1].toString());
             if (ids.length == 0) {
                 idlistUsage();
                 return;

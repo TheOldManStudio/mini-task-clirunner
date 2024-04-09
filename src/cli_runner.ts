@@ -103,7 +103,7 @@ export class TaskCliRunner {
 
     console.log(`Task: ${path}`);
 
-    let ids = parseIds(argv._[1] as string);
+    let ids = parseIds(argv._[1].toString());
     if (ids.length == 0) {
       idlistUsage();
       return;
