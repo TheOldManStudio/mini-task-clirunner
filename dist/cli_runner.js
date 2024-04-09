@@ -33,9 +33,16 @@ const usage = () => {
     console.log("Usage:");
     console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
     console.log("options:");
-    console.log("    --no-shuffle");
-    console.log("    --chain <chain>");
-    console.log("    --force");
+    console.log("    --no-shuffle     no ID shuffle");
+    console.log("    --chain <chain>  chain identifier defined in taskconfig.json");
+    console.log("    --force          force run task even if there was already an instance");
+};
+const idlistUsage = () => {
+    console.log("ID list usage");
+    console.log("    Comma seperated: 1,3,5,100");
+    console.log("    Range:           1-100");
+    console.log("    Composite:       2,5,7,10-100");
+    console.log("Note: no space character allowed");
 };
 class TaskCliRunner {
     setAutoChainHandler(handler) {
@@ -43,6 +50,10 @@ class TaskCliRunner {
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
+            if (process.argv.length < 4) {
+                usage();
+                return;
+            }
             const config = (0, config_1.loadConfig)();
             // console.log(config);
             let { chain, shuffleId, accountFile, taskDefDir, reportDir, taskTimeout } = config;
@@ -78,7 +89,7 @@ class TaskCliRunner {
             console.log(`Task: ${path}`);
             let ids = (0, id_parser_1.parseIds)(argv._[1]);
             if (ids.length == 0) {
-                usage();
+                idlistUsage();
                 return;
             }
             // randomize ids

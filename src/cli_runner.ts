@@ -32,9 +32,17 @@ const usage = () => {
   console.log("Usage:");
   console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
   console.log("options:");
-  console.log("    --no-shuffle");
-  console.log("    --chain <chain>");
-  console.log("    --force");
+  console.log("    --no-shuffle     no ID shuffle");
+  console.log("    --chain <chain>  chain identifier defined in taskconfig.json");
+  console.log("    --force          force run task even if there was already an instance");
+};
+
+const idlistUsage = () => {
+  console.log("ID list usage");
+  console.log("    Comma seperated: 1,3,5,100");
+  console.log("    Range:           1-100");
+  console.log("    Composite:       2,5,7,10-100");
+  console.log("Note: no space character allowed");
 };
 
 export class TaskCliRunner {
@@ -45,6 +53,11 @@ export class TaskCliRunner {
   }
 
   public async run() {
+    if (process.argv.length < 4) {
+      usage();
+      return;
+    }
+
     const config = loadConfig();
 
     // console.log(config);
@@ -92,7 +105,7 @@ export class TaskCliRunner {
 
     let ids = parseIds(argv._[1] as string);
     if (ids.length == 0) {
-      usage();
+      idlistUsage();
       return;
     }
 
