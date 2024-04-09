@@ -169,19 +169,32 @@ class TaskCliRunner {
                                 .parse();
                         }
                         let timeoutId;
+                        const timeoutErr = "timeout";
                         const timeout = (millis) => new Promise((resolve, reject) => {
-                            timeoutId = setTimeout(reject, millis, "timeout");
+                            timeoutId = setTimeout(reject, millis, timeoutErr);
                         });
-                        let result = yield Promise.race([timeout(taskTimeout), func(user, context, parsedArgs)]);
-                        if (timeoutId)
-                            clearTimeout(timeoutId);
-                        // persist result
-                        if (result) {
-                            if (typeof result != "object")
-                                throw new Error("result should be a key-value object {}");
-                            yield (0, csv_1.addNewRecord)(reportFile, Object.assign({ id: user.id, address: user.address }, result));
+                        try {
+                            let result = yield Promise.race([timeout(taskTimeout), func(user, context, parsedArgs)]);
+                            // persist result
+                            if (result) {
+                                if (typeof result != "object")
+                                    throw new Error("result should be a key-value object {}");
+                                yield (0, csv_1.addNewRecord)(reportFile, Object.assign({ id: user.id, address: user.address }, result));
+                            }
+                            console.log((0, safe_1.green)("done"));
                         }
-                        console.log((0, safe_1.green)("done"));
+                        catch (e) {
+                            if (e == timeoutErr) {
+                                console.log((0, safe_1.red)(e));
+                            }
+                            else {
+                                throw e;
+                            }
+                        }
+                        finally {
+                            if (timeoutId)
+                                clearTimeout(timeoutId);
+                        }
                         // handling delay
                         if (delayspec && (j < tasks.length - 1 || i < ids.length - 1)) {
                             let sec = parseFloat(delayspec);

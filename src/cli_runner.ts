@@ -196,22 +196,31 @@ export class TaskCliRunner {
           }
 
           let timeoutId: string | number | NodeJS.Timeout;
+          const timeoutErr = "timeout";
           const timeout = (millis: number) =>
             new Promise((resolve, reject) => {
-              timeoutId = setTimeout(reject, millis, "timeout");
+              timeoutId = setTimeout(reject, millis, timeoutErr);
             });
 
-          let result = await Promise.race([timeout(taskTimeout), func(user, context, parsedArgs)]);
+          try {
+            let result = await Promise.race([timeout(taskTimeout), func(user, context, parsedArgs)]);
 
-          if (timeoutId) clearTimeout(timeoutId);
+            // persist result
+            if (result) {
+              if (typeof result != "object") throw new Error("result should be a key-value object {}");
+              await addNewRecord(reportFile, { id: user.id, address: user.address, ...result });
+            }
 
-          // persist result
-          if (result) {
-            if (typeof result != "object") throw new Error("result should be a key-value object {}");
-            await addNewRecord(reportFile, { id: user.id, address: user.address, ...result });
+            console.log(green("done"));
+          } catch (e: any) {
+            if (e == timeoutErr) {
+              console.log(red(e));
+            } else {
+              throw e;
+            }
+          } finally {
+            if (timeoutId) clearTimeout(timeoutId);
           }
-
-          console.log(green("done"));
 
           // handling delay
           if (delayspec && (j < tasks.length - 1 || i < ids.length - 1)) {
