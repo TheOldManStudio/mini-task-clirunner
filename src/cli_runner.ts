@@ -103,6 +103,7 @@ export class TaskCliRunner {
 
     console.log(`Task: ${path}`);
 
+    // id list
     let ids = parseIds(argv._[1].toString());
     if (ids.length == 0) {
       idlistUsage();
@@ -116,19 +117,18 @@ export class TaskCliRunner {
     let taskArgs: (string | number)[] = [];
     if (argv._.length > 2) taskArgs = argv._.slice(2);
 
-    // read all accounts
-    const users = readRecords(accountFile);
-
-    let chainObj: Chain;
-
-    if (chain != "auto") {
-      chainObj = getChainInfo(chain);
-      if (!chainObj) throw new Error(`unknown chain ${chain}`);
-    } else {
+    // chain info
+    if (chain == "auto") {
       if (!this.hanlder) throw Error("must implement AutoChainHandler to use auto");
+      console.log(`Chain: ${green(chain)}`);
+    } else {
+      const chainObj = getChainInfo(chain);
+      if (!chainObj) throw new Error(`unknown chain ${chain}`);
+      console.log(`Chain: ${green(chainObj.chain)}`);
     }
 
-    console.log(`Chain: ${green(chainObj ? chainObj.chain : (chain as string))}`);
+    // read all accounts
+    const users = readRecords(accountFile);
 
     for (let i = 0; i < ids.length; i++) {
       const user = _.find(users, { id: ids[i] });
@@ -142,11 +142,12 @@ export class TaskCliRunner {
       console.log(green(`[${i + 1}/${ids.length}]`), yellow(`#${user.id}, ${user.address}`));
 
       // run middleware
+      let realChain = chain;
       if (chain == "auto" && this.hanlder) {
         try {
           const cloneConfig = { ...config };
           const cloneUser = { ...user };
-          chain = await this.hanlder(cloneUser, cloneConfig);
+          realChain = await this.hanlder(cloneUser, cloneConfig);
         } catch (error: any) {
           console.log(red(error));
           continue;
@@ -155,13 +156,13 @@ export class TaskCliRunner {
 
       // prepare context
 
-      chainObj = getChainInfo(chain);
-      const deployedContracts = getDeployedContracts(chain);
+      const chainObj = getChainInfo(realChain);
+      const deployedContracts = getDeployedContracts(realChain);
 
       const context: Context = {
         id: -9999,
         name: "",
-        chain,
+        chain: realChain,
         chainObj,
         deployedContracts,
         users,

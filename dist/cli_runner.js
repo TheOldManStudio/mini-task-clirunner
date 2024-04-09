@@ -87,6 +87,7 @@ class TaskCliRunner {
             if (tasks.length <= 0)
                 throw new error_1.NoTaskDefinedError();
             console.log(`Task: ${path}`);
+            // id list
             let ids = (0, id_parser_1.parseIds)(argv._[1].toString());
             if (ids.length == 0) {
                 idlistUsage();
@@ -99,19 +100,20 @@ class TaskCliRunner {
             let taskArgs = [];
             if (argv._.length > 2)
                 taskArgs = argv._.slice(2);
-            // read all accounts
-            const users = (0, csv_1.readRecords)(accountFile);
-            let chainObj;
-            if (chain != "auto") {
-                chainObj = (0, config_1.getChainInfo)(chain);
-                if (!chainObj)
-                    throw new Error(`unknown chain ${chain}`);
-            }
-            else {
+            // chain info
+            if (chain == "auto") {
                 if (!this.hanlder)
                     throw Error("must implement AutoChainHandler to use auto");
+                console.log(`Chain: ${(0, safe_1.green)(chain)}`);
             }
-            console.log(`Chain: ${(0, safe_1.green)(chainObj ? chainObj.chain : chain)}`);
+            else {
+                const chainObj = (0, config_1.getChainInfo)(chain);
+                if (!chainObj)
+                    throw new Error(`unknown chain ${chain}`);
+                console.log(`Chain: ${(0, safe_1.green)(chainObj.chain)}`);
+            }
+            // read all accounts
+            const users = (0, csv_1.readRecords)(accountFile);
             for (let i = 0; i < ids.length; i++) {
                 const user = lodash_1.default.find(users, { id: ids[i] });
                 if (!user) {
@@ -121,11 +123,12 @@ class TaskCliRunner {
                 console.log();
                 console.log((0, safe_1.green)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
                 // run middleware
+                let realChain = chain;
                 if (chain == "auto" && this.hanlder) {
                     try {
                         const cloneConfig = Object.assign({}, config);
                         const cloneUser = Object.assign({}, user);
-                        chain = yield this.hanlder(cloneUser, cloneConfig);
+                        realChain = yield this.hanlder(cloneUser, cloneConfig);
                     }
                     catch (error) {
                         console.log((0, safe_1.red)(error));
@@ -133,12 +136,12 @@ class TaskCliRunner {
                     }
                 }
                 // prepare context
-                chainObj = (0, config_1.getChainInfo)(chain);
-                const deployedContracts = (0, config_1.getDeployedContracts)(chain);
+                const chainObj = (0, config_1.getChainInfo)(realChain);
+                const deployedContracts = (0, config_1.getDeployedContracts)(realChain);
                 const context = {
                     id: -9999,
                     name: "",
-                    chain,
+                    chain: realChain,
                     chainObj,
                     deployedContracts,
                     users,
