@@ -3,6 +3,7 @@
   "accountFile": "./accounts.csv",
   "taskDefDir": "./src/tasks",
   "reportDir": ".",
+  "taskTimeout": 600000,
 
   "chain": "auto",
 

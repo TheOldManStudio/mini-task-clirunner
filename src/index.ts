@@ -13,7 +13,7 @@ export type Chain = {
 };
 
 export { Context, Arg, Task, TaskAction, TaskResult } from "./task";
-export { TaskCliRunner, PrerunPlugin as PretaskHandler } from "./cli_runner";
+export { TaskCliRunner, AutoChainHandler } from "./cli_runner";
 export { getChainInfo, getDeployedContracts, TaskConfig } from "./config";
 export { addNewRecord, readRecords, removeRecord, persistRecords } from "./csv";
 export { parseIds } from "./id_parser";

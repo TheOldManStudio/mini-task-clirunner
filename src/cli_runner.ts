@@ -17,9 +17,9 @@ import { Account, Chain, Context } from "./index";
 
 //
 /**
- * @dev attributes of config are mutable
+ * @dev attributes of config are not mutable
  */
-export type PrerunPlugin = (user: Account, config: TaskConfig) => Promise<void>;
+export type AutoChainHandler = (user: Account, config: TaskConfig) => Promise<string>;
 
 const buildRecordFilePath = (reportDir: string, taskId: number) => `${reportDir}/task_${taskId}.csv`;
 
@@ -29,9 +29,9 @@ const readTaskRecord = async (reportDir: string, userId: number, taskId: number)
 };
 
 export class TaskCliRunner {
-  private hanlder?: PrerunPlugin;
+  private hanlder?: AutoChainHandler;
 
-  public setPrerunPlugin(handler: PrerunPlugin) {
+  public setAutoChainHandler(handler: AutoChainHandler) {
     this.hanlder = handler;
   }
 
@@ -40,7 +40,7 @@ export class TaskCliRunner {
 
     // console.log(config);
 
-    let { chain, shuffleId, accountFile, taskDefDir, reportDir } = config;
+    let { chain, shuffleId, accountFile, taskDefDir, reportDir, taskTimeout } = config;
     let force = false;
 
     const argv = await yargs(process.argv.slice(2)).parse();
@@ -104,6 +104,8 @@ export class TaskCliRunner {
     if (chain != "auto") {
       chainObj = getChainInfo(chain);
       if (!chainObj) throw new Error(`unknown chain ${chain}`);
+    } else {
+      if (!this.hanlder) throw Error("must implement AutoChainHandler to use auto");
     }
 
     console.log(`Chain: ${green(chainObj ? chainObj.chain : (chain as string))}`);
@@ -120,13 +122,11 @@ export class TaskCliRunner {
       console.log(green(`[${i + 1}/${ids.length}]`), yellow(`#${user.id}, ${user.address}`));
 
       // run middleware
-      if (this.hanlder) {
+      if (chain == "auto" && this.hanlder) {
         try {
           const cloneConfig = { ...config };
           const cloneUser = { ...user };
-          await this.hanlder(cloneUser, cloneConfig);
-
-          chain = cloneConfig.chain;
+          chain = await this.hanlder(cloneUser, cloneConfig);
         } catch (error: any) {
           console.log(red(error));
           continue;
@@ -174,7 +174,9 @@ export class TaskCliRunner {
               .parse();
           }
 
-          let result = await func(user, context, parsedArgs);
+          const timeout = (millis: number) => new Promise((resolve, reject) => setTimeout(reject, millis, "timeout"));
+
+          let result = await Promise.race([timeout(taskTimeout), func(user, context, parsedArgs)]);
 
           // persist result
           if (result) {

@@ -30,14 +30,14 @@ const readTaskRecord = (reportDir, userId, taskId) => __awaiter(void 0, void 0, 
     return (0, csv_1.findRecordById)(reportFile, userId);
 });
 class TaskCliRunner {
-    setPrerunPlugin(handler) {
+    setAutoChainHandler(handler) {
         this.hanlder = handler;
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             const config = (0, config_1.loadConfig)();
             // console.log(config);
-            let { chain, shuffleId, accountFile, taskDefDir, reportDir } = config;
+            let { chain, shuffleId, accountFile, taskDefDir, reportDir, taskTimeout } = config;
             let force = false;
             const argv = yield (0, yargs_1.default)(process.argv.slice(2)).parse();
             // console.log(argv);
@@ -90,6 +90,10 @@ class TaskCliRunner {
                 if (!chainObj)
                     throw new Error(`unknown chain ${chain}`);
             }
+            else {
+                if (!this.hanlder)
+                    throw Error("must implement AutoChainHandler to use auto");
+            }
             console.log(`Chain: ${(0, safe_1.green)(chainObj ? chainObj.chain : chain)}`);
             for (let i = 0; i < ids.length; i++) {
                 const user = lodash_1.default.find(users, { id: ids[i] });
@@ -100,12 +104,11 @@ class TaskCliRunner {
                 console.log();
                 console.log((0, safe_1.green)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
                 // run middleware
-                if (this.hanlder) {
+                if (chain == "auto" && this.hanlder) {
                     try {
                         const cloneConfig = Object.assign({}, config);
                         const cloneUser = Object.assign({}, user);
-                        yield this.hanlder(cloneUser, cloneConfig);
-                        chain = cloneConfig.chain;
+                        chain = yield this.hanlder(cloneUser, cloneConfig);
                     }
                     catch (error) {
                         console.log((0, safe_1.red)(error));
@@ -145,7 +148,8 @@ class TaskCliRunner {
                                 .command(`* ${argspec}`, false)
                                 .parse();
                         }
-                        let result = yield func(user, context, parsedArgs);
+                        const timeout = (millis) => new Promise((resolve, reject) => setTimeout(reject, millis, "timeout"));
+                        let result = yield Promise.race([timeout(taskTimeout), func(user, context, parsedArgs)]);
                         // persist result
                         if (result) {
                             if (typeof result != "object")

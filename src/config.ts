@@ -9,6 +9,7 @@ export type TaskConfig = {
   taskDefDir: string;
   accountFile: string;
   reportDir: string;
+  taskTimeout: number;
 
   chains: { [chain: number | string]: Chain };
   deployed: { [chain: number | string]: { [name: string]: string } };
@@ -36,6 +37,8 @@ export const loadConfig = (): TaskConfig => {
   configObj.accountFile = configObj.accountFile || "./accounts.csv";
 
   configObj.reportDir = configObj.reportDir || ".";
+
+  configObj.taskTimeout = 10 * 60000; // 10 mins
 
   configObj.chains = configObj.chains || {};
   configObj.deployed = configObj.deployed || {};

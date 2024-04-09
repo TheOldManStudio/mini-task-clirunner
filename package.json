@@ -13,10 +13,12 @@
   "typings": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "devDependencies": {
+    "@types/chai": "^4.3.14",
     "@types/lodash": "^4.17.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.30",
     "@types/yargs": "^17.0.32",
+    "chai": "^5.1.0",
     "mocha": "^10.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.3"
