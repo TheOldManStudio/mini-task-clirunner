@@ -174,9 +174,15 @@ export class TaskCliRunner {
               .parse();
           }
 
-          const timeout = (millis: number) => new Promise((resolve, reject) => setTimeout(reject, millis, "timeout"));
+          let timeoutId;
+          const timeout = (millis: number) =>
+            new Promise((resolve, reject) => {
+              timeoutId = setTimeout(reject, millis, "timeout");
+            });
 
           let result = await Promise.race([timeout(taskTimeout), func(user, context, parsedArgs)]);
+
+          if (timeoutId) clearTimeout(timeoutId);
 
           // persist result
           if (result) {

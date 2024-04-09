@@ -148,8 +148,13 @@ class TaskCliRunner {
                                 .command(`* ${argspec}`, false)
                                 .parse();
                         }
-                        const timeout = (millis) => new Promise((resolve, reject) => setTimeout(reject, millis, "timeout"));
+                        let timeoutId;
+                        const timeout = (millis) => new Promise((resolve, reject) => {
+                            timeoutId = setTimeout(reject, millis, "timeout");
+                        });
                         let result = yield Promise.race([timeout(taskTimeout), func(user, context, parsedArgs)]);
+                        if (timeoutId)
+                            clearTimeout(timeoutId);
                         // persist result
                         if (result) {
                             if (typeof result != "object")
