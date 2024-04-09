@@ -29,6 +29,14 @@ const readTaskRecord = (reportDir, userId, taskId) => __awaiter(void 0, void 0, 
     const reportFile = buildRecordFilePath(reportDir, taskId);
     return (0, csv_1.findRecordById)(reportFile, userId);
 });
+const usage = () => {
+    console.log("Usage:");
+    console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
+    console.log("options:");
+    console.log("    --no-shuffle");
+    console.log("    --chain <chain>");
+    console.log("    --force");
+};
 class TaskCliRunner {
     setAutoChainHandler(handler) {
         this.hanlder = handler;
@@ -70,9 +78,7 @@ class TaskCliRunner {
             console.log(`Task: ${path}`);
             let ids = (0, id_parser_1.parseIds)(argv._[1]);
             if (ids.length == 0) {
-                console.log("Usage:");
-                console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
-                console.log("options: --no-shuffle --chain <chain>");
+                usage();
                 return;
             }
             // randomize ids
