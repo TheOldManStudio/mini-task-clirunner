@@ -38,7 +38,7 @@ export const loadConfig = (): TaskConfig => {
 
   configObj.reportDir = configObj.reportDir || ".";
 
-  configObj.taskTimeout = 10 * 60000; // 10 mins
+  configObj.taskTimeout = configObj.taskTimeout || 10 * 60000; // 10 mins
 
   configObj.chains = configObj.chains || {};
   configObj.deployed = configObj.deployed || {};
