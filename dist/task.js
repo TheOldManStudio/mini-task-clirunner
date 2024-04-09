@@ -29,7 +29,7 @@ class Task {
             throw new Error("task needs an aysnc func");
         }
         this.func = func;
-        Task.tasklist.push(Object.assign({}, this));
+        Task.tasklist.push(this);
         return this;
     }
 }

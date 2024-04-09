@@ -63,7 +63,7 @@ export class Task {
 
     this.func = func;
 
-    Task.tasklist.push({ ...this });
+    Task.tasklist.push(this);
 
     return this;
   }
