@@ -25,6 +25,7 @@ export class Task {
   public name: string | undefined;
   public delayspec?: string | number;
   public argspec?: string;
+  public chainId: string | number;
 
   public func: TaskAction;
 
@@ -53,6 +54,11 @@ export class Task {
    */
   public args(spec: string) {
     this.argspec = spec;
+    return this;
+  }
+
+  public chain(chain: string | number) {
+    this.chainId = chain;
     return this;
   }
 

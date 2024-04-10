@@ -24,6 +24,10 @@ class Task {
         this.argspec = spec;
         return this;
     }
+    chain(chain) {
+        this.chainId = chain;
+        return this;
+    }
     action(func) {
         if (!func) {
             throw new Error("task needs an aysnc func");

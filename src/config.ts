@@ -10,6 +10,7 @@ export type TaskConfig = {
   accountFile: string;
   reportDir: string;
   taskTimeout: number;
+  force: boolean;
 
   chains: { [chain: number | string]: Chain };
   deployed: { [chain: number | string]: { [name: string]: string } };
@@ -32,6 +33,7 @@ export const loadConfig = (): TaskConfig => {
   configObj = configObj || {};
 
   configObj.shuffleId = configObj.shuffleId || true;
+  configObj.force = false;
 
   configObj.taskDefDir = configObj.taskDefDir || "./src/tasks";
   configObj.accountFile = configObj.accountFile || "./accounts.csv";
@@ -43,7 +45,11 @@ export const loadConfig = (): TaskConfig => {
   configObj.chains = configObj.chains || {};
   configObj.deployed = configObj.deployed || {};
 
-  configObj.chain = configObj.chain || "auto";
+  if (!configObj.chain) {
+    // defaul to the first of defined chains.
+    const keys = Object.keys(configObj.chains);
+    if (keys.length >= 0) configObj.chain = keys[0];
+  }
 
   cached = configObj as TaskConfig;
 

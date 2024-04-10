@@ -6,8 +6,6 @@ export const parseIds = (input: string): string[] => {
   if (input) {
     const tokens = input.toString().split(",");
 
-    // console.log(tokens);
-
     tokens.forEach((element) => {
       if (element && element.trim() !== "") {
         if (element.indexOf("-") !== -1) {

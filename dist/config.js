@@ -18,13 +18,19 @@ const loadConfig = () => {
     let configObj = require(files[0]);
     configObj = configObj || {};
     configObj.shuffleId = configObj.shuffleId || true;
+    configObj.force = false;
     configObj.taskDefDir = configObj.taskDefDir || "./src/tasks";
     configObj.accountFile = configObj.accountFile || "./accounts.csv";
     configObj.reportDir = configObj.reportDir || ".";
     configObj.taskTimeout = configObj.taskTimeout || 10 * 60000; // 10 mins
     configObj.chains = configObj.chains || {};
     configObj.deployed = configObj.deployed || {};
-    configObj.chain = configObj.chain || "auto";
+    if (!configObj.chain) {
+        // defaul to the first of defined chains.
+        const keys = Object.keys(configObj.chains);
+        if (keys.length >= 0)
+            configObj.chain = keys[0];
+    }
     cached = configObj;
     return cached;
 };

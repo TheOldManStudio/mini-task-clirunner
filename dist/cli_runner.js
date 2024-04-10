@@ -55,21 +55,19 @@ class TaskCliRunner {
                 return;
             }
             const config = (0, config_1.loadConfig)();
-            // console.log(config);
-            let { chain, shuffleId, accountFile, taskDefDir, reportDir, taskTimeout } = config;
-            let force = false;
             const argv = yield (0, yargs_1.default)(process.argv.slice(2)).parse();
-            // console.log(argv);
-            if (argv.chain)
-                chain = argv.chain;
-            if (!chain)
-                throw new Error("no chainId");
+            if (argv.hasOwnProperty("chain")) {
+                config.chain = argv.chain;
+            }
             if (argv.hasOwnProperty("shuffle")) {
-                shuffleId = argv.shuffle;
+                config.shuffleId = argv.shuffle;
             }
             if (argv.hasOwnProperty("force")) {
-                force = true;
+                config.force = true;
             }
+            let { chain, shuffleId, force, accountFile, taskDefDir, reportDir, taskTimeout } = config;
+            if (!chain)
+                throw new Error("no chain specified.");
             const taskFileName = argv._[0];
             if (!taskFileName)
                 throw new error_1.TaskFileNotFoundError();
@@ -109,7 +107,7 @@ class TaskCliRunner {
             else {
                 const chainObj = (0, config_1.getChainInfo)(chain);
                 if (!chainObj)
-                    throw new Error(`unknown chain ${chain}`);
+                    throw new Error(`undefined chain ${chain}`);
                 console.log(`Chain: ${(0, safe_1.green)(chainObj.chain)}`);
             }
             // read all accounts
@@ -123,25 +121,25 @@ class TaskCliRunner {
                 console.log();
                 console.log((0, safe_1.green)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
                 // run middleware
-                let realChain = chain;
-                if (chain == "auto" && this.hanlder) {
+                let effectiveChain = chain;
+                if (this.hanlder) {
                     try {
                         const cloneConfig = Object.assign({}, config);
                         const cloneUser = Object.assign({}, user);
-                        realChain = yield this.hanlder(cloneUser, cloneConfig);
+                        effectiveChain = yield this.hanlder(cloneUser, cloneConfig);
+                        if (!(0, config_1.getChainInfo)(effectiveChain))
+                            throw new Error(`undefined chain ${effectiveChain}`);
                     }
                     catch (error) {
                         console.log((0, safe_1.red)(error));
                         continue;
                     }
                 }
-                // prepare context
-                const chainObj = (0, config_1.getChainInfo)(realChain);
-                const deployedContracts = (0, config_1.getDeployedContracts)(realChain);
+                // context
+                const chainObj = (0, config_1.getChainInfo)(effectiveChain);
+                const deployedContracts = (0, config_1.getDeployedContracts)(effectiveChain);
                 const context = {
-                    id: -9999,
-                    name: "",
-                    chain: realChain,
+                    chain: effectiveChain,
                     chainObj,
                     deployedContracts,
                     users,
@@ -150,7 +148,7 @@ class TaskCliRunner {
                 for (let j = 0; j < tasks.length; j++) {
                     const task = tasks[j];
                     try {
-                        const { id, name, delayspec, argspec, func } = task;
+                        const { id, name, delayspec, argspec, func, chainId: taskDefinedChain } = task;
                         if (tasks.length > 1) {
                             console.log((0, safe_1.yellow)(`-->subtask #${id}: ${name || ""}`));
                         }
@@ -158,6 +156,21 @@ class TaskCliRunner {
                         if (!force && (0, csv_1.findRecordById)(reportFile, user.id)) {
                             console.log("already", (0, safe_1.green)("done"));
                             continue;
+                        }
+                        // context
+                        context.chain = effectiveChain;
+                        context.chainObj = chainObj;
+                        context.deployedContracts = deployedContracts;
+                        if (taskDefinedChain) {
+                            const taskChainObj = (0, config_1.getChainInfo)(taskDefinedChain);
+                            const taskDeployedContracts = (0, config_1.getDeployedContracts)(taskDefinedChain);
+                            if (!taskChainObj) {
+                                console.log((0, safe_1.red)(`task defined chain not defined: ${taskDefinedChain}`));
+                                break;
+                            }
+                            context.chain = taskDefinedChain;
+                            context.chainObj = taskChainObj;
+                            context.deployedContracts = taskDeployedContracts;
                         }
                         context.id = id;
                         context.name = name;

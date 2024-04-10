@@ -22,6 +22,7 @@ export declare class Task {
     name: string | undefined;
     delayspec?: string | number;
     argspec?: string;
+    chainId: string | number;
     func: TaskAction;
     static tasklist: Task[];
     private constructor();
@@ -35,6 +36,7 @@ export declare class Task {
      * @returns
      */
     args(spec: string): this;
+    chain(chain: string | number): this;
     action(func: TaskAction): this;
 }
 declare const _default: typeof Task.createTask;

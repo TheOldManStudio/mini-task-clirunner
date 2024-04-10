@@ -6,6 +6,7 @@ export type TaskConfig = {
     accountFile: string;
     reportDir: string;
     taskTimeout: number;
+    force: boolean;
     chains: {
         [chain: number | string]: Chain;
     };

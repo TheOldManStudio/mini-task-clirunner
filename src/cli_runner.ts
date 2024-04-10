@@ -60,25 +60,23 @@ export class TaskCliRunner {
 
     const config = loadConfig();
 
-    // console.log(config);
-
-    let { chain, shuffleId, accountFile, taskDefDir, reportDir, taskTimeout } = config;
-    let force = false;
-
     const argv = await yargs(process.argv.slice(2)).parse();
 
-    // console.log(argv);
-
-    if (argv.chain) chain = argv.chain as string;
-    if (!chain) throw new Error("no chainId");
+    if (argv.hasOwnProperty("chain")) {
+      config.chain = argv.chain as string;
+    }
 
     if (argv.hasOwnProperty("shuffle")) {
-      shuffleId = argv.shuffle as boolean;
+      config.shuffleId = argv.shuffle as boolean;
     }
 
     if (argv.hasOwnProperty("force")) {
-      force = true;
+      config.force = true;
     }
+
+    let { chain, shuffleId, force, accountFile, taskDefDir, reportDir, taskTimeout } = config;
+
+    if (!chain) throw new Error("no chain specified.");
 
     const taskFileName = argv._[0];
     if (!taskFileName) throw new TaskFileNotFoundError();
@@ -123,7 +121,7 @@ export class TaskCliRunner {
       console.log(`Chain: ${green(chain)}`);
     } else {
       const chainObj = getChainInfo(chain);
-      if (!chainObj) throw new Error(`unknown chain ${chain}`);
+      if (!chainObj) throw new Error(`undefined chain ${chain}`);
       console.log(`Chain: ${green(chainObj.chain)}`);
     }
 
@@ -142,27 +140,26 @@ export class TaskCliRunner {
       console.log(green(`[${i + 1}/${ids.length}]`), yellow(`#${user.id}, ${user.address}`));
 
       // run middleware
-      let realChain = chain;
-      if (chain == "auto" && this.hanlder) {
+      let effectiveChain = chain;
+      if (this.hanlder) {
         try {
           const cloneConfig = { ...config };
           const cloneUser = { ...user };
-          realChain = await this.hanlder(cloneUser, cloneConfig);
+          effectiveChain = await this.hanlder(cloneUser, cloneConfig);
+          if (!getChainInfo(effectiveChain)) throw new Error(`undefined chain ${effectiveChain}`);
         } catch (error: any) {
           console.log(red(error));
           continue;
         }
       }
 
-      // prepare context
+      // context
 
-      const chainObj = getChainInfo(realChain);
-      const deployedContracts = getDeployedContracts(realChain);
+      const chainObj = getChainInfo(effectiveChain);
+      const deployedContracts = getDeployedContracts(effectiveChain);
 
-      const context: Context = {
-        id: -9999,
-        name: "",
-        chain: realChain,
+      const context: Partial<Context> = {
+        chain: effectiveChain,
         chainObj,
         deployedContracts,
         users,
@@ -172,7 +169,7 @@ export class TaskCliRunner {
       for (let j = 0; j < tasks.length; j++) {
         const task = tasks[j];
         try {
-          const { id, name, delayspec, argspec, func } = task;
+          const { id, name, delayspec, argspec, func, chainId: taskDefinedChain } = task;
 
           if (tasks.length > 1) {
             console.log(yellow(`-->subtask #${id}: ${name || ""}`));
@@ -182,6 +179,26 @@ export class TaskCliRunner {
           if (!force && findRecordById(reportFile, user.id)) {
             console.log("already", green("done"));
             continue;
+          }
+
+          // context
+
+          context.chain = effectiveChain;
+          context.chainObj = chainObj;
+          context.deployedContracts = deployedContracts;
+
+          if (taskDefinedChain) {
+            const taskChainObj = getChainInfo(taskDefinedChain);
+            const taskDeployedContracts = getDeployedContracts(taskDefinedChain);
+
+            if (!taskChainObj) {
+              console.log(red(`task defined chain not defined: ${taskDefinedChain}`));
+              break;
+            }
+
+            context.chain = taskDefinedChain;
+            context.chainObj = taskChainObj;
+            context.deployedContracts = taskDeployedContracts;
           }
 
           context.id = id;
@@ -203,7 +220,7 @@ export class TaskCliRunner {
             });
 
           try {
-            let result = await Promise.race([timeout(taskTimeout), func(user, context, parsedArgs)]);
+            let result = await Promise.race([timeout(taskTimeout), func(user, context as Context, parsedArgs)]);
 
             // persist result
             if (result) {
