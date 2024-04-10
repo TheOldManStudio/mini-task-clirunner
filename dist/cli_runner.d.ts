@@ -13,6 +13,6 @@ export declare class TaskCliRunner {
     private _readTaskRecord;
     private _usage;
     private _idlistUsage;
-    private _loadTaskFile;
+    private _loadTask;
     run(): Promise<void>;
 }

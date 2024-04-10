@@ -56,7 +56,7 @@ class TaskCliRunner {
         console.log("    Composite:       2,5,7,10-100");
         console.log("Note: no space character allowed");
     }
-    _loadTaskFile(taskName) {
+    _loadTask(taskName) {
         return __awaiter(this, void 0, void 0, function* () {
             let { taskDefDir } = this._config;
             const cwd = process.cwd();
@@ -96,7 +96,7 @@ class TaskCliRunner {
                 return;
             }
             const taskName = argv._[0];
-            const tasks = yield this._loadTaskFile(taskName);
+            const tasks = yield this._loadTask(taskName);
             // id list
             let ids = [];
             try {

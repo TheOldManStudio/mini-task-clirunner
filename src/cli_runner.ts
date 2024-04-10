@@ -61,7 +61,7 @@ export class TaskCliRunner {
     console.log("Note: no space character allowed");
   }
 
-  private async _loadTaskFile(taskName: string): Promise<Task[]> {
+  private async _loadTask(taskName: string): Promise<Task[]> {
     let { taskDefDir } = this._config;
 
     const cwd = process.cwd();
@@ -112,7 +112,7 @@ export class TaskCliRunner {
     }
 
     const taskName = argv._[0];
-    const tasks = await this._loadTaskFile(taskName as string);
+    const tasks = await this._loadTask(taskName as string);
 
     // id list
     let ids = [];
