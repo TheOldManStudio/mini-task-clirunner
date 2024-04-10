@@ -53,14 +53,9 @@ export class TaskCliRunner {
   }
 
   public async run() {
-    if (process.argv.length < 4) {
-      usage();
-      return;
-    }
-
     const config = loadConfig();
 
-    const argv = await yargs(process.argv.slice(2)).parse();
+    const argv = await yargs(process.argv.slice(2)).option("force", { type: "boolean" }).parse();
 
     if (argv.hasOwnProperty("chain")) {
       config.chain = argv.chain as string;
@@ -77,6 +72,11 @@ export class TaskCliRunner {
     let { chain, shuffleId, force, accountFile, taskDefDir, reportDir, taskTimeout } = config;
 
     if (!chain) throw new Error("no chain specified.");
+
+    if (argv._.length < 2) {
+      usage();
+      return;
+    }
 
     const taskFileName = argv._[0];
     if (!taskFileName) throw new TaskFileNotFoundError();
@@ -102,7 +102,10 @@ export class TaskCliRunner {
     console.log(`Task: ${path}`);
 
     // id list
-    let ids = parseIds(argv._[1].toString());
+    let ids = [];
+    try {
+      ids = parseIds(argv._[1].toString());
+    } catch (e) {}
     if (ids.length == 0) {
       idlistUsage();
       return;

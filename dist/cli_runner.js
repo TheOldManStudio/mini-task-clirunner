@@ -50,12 +50,8 @@ class TaskCliRunner {
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (process.argv.length < 4) {
-                usage();
-                return;
-            }
             const config = (0, config_1.loadConfig)();
-            const argv = yield (0, yargs_1.default)(process.argv.slice(2)).parse();
+            const argv = yield (0, yargs_1.default)(process.argv.slice(2)).option("force", { type: "boolean" }).parse();
             if (argv.hasOwnProperty("chain")) {
                 config.chain = argv.chain;
             }
@@ -68,6 +64,10 @@ class TaskCliRunner {
             let { chain, shuffleId, force, accountFile, taskDefDir, reportDir, taskTimeout } = config;
             if (!chain)
                 throw new Error("no chain specified.");
+            if (argv._.length < 2) {
+                usage();
+                return;
+            }
             const taskFileName = argv._[0];
             if (!taskFileName)
                 throw new error_1.TaskFileNotFoundError();
@@ -86,7 +86,11 @@ class TaskCliRunner {
                 throw new error_1.NoTaskDefinedError();
             console.log(`Task: ${path}`);
             // id list
-            let ids = (0, id_parser_1.parseIds)(argv._[1].toString());
+            let ids = [];
+            try {
+                ids = (0, id_parser_1.parseIds)(argv._[1].toString());
+            }
+            catch (e) { }
             if (ids.length == 0) {
                 idlistUsage();
                 return;
