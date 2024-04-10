@@ -17,78 +17,61 @@ import { Account, Chain, Context } from "./index";
 
 //
 /**
- * @dev attributes of config are not mutable
+ * @dev attributes of config are immutable
  */
 export type AutoChainHandler = (user: Account, config: TaskConfig) => Promise<string>;
 
-const buildRecordFilePath = (reportDir: string, taskId: number) => `${reportDir}/task_${taskId}.csv`;
-
-const readTaskRecord = async (reportDir: string, userId: number, taskId: number) => {
-  const reportFile = buildRecordFilePath(reportDir, taskId);
-  return findRecordById(reportFile, userId);
-};
-
-const usage = () => {
-  console.log("Usage:");
-  console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
-  console.log("options:");
-  console.log("    --no-shuffle     no ID shuffle");
-  console.log("    --chain <chain>  chain identifier defined in taskconfig.json");
-  console.log("    --force          force run task even if there was already an instance");
-};
-
-const idlistUsage = () => {
-  console.log("ID list usage");
-  console.log("    Comma seperated: 1,3,5,100");
-  console.log("    Range:           1-100");
-  console.log("    Composite:       2,5,7,10-100");
-  console.log("Note: no space character allowed");
-};
-
 export class TaskCliRunner {
-  private hanlder?: AutoChainHandler;
+  private _hanlder?: AutoChainHandler;
+  private _config: TaskConfig;
 
-  public setAutoChainHandler(handler: AutoChainHandler) {
-    this.hanlder = handler;
+  constructor() {
+    this._config = loadConfig();
   }
 
-  public async run() {
-    const config = loadConfig();
+  public setAutoChainHandler(handler: AutoChainHandler) {
+    this._hanlder = handler;
+  }
 
-    const argv = await yargs(process.argv.slice(2)).option("force", { type: "boolean" }).parse();
+  private _buildRecordFilePath(taskId: number) {
+    const { reportDir } = this._config;
+    return `${reportDir}/task_${taskId}.csv`;
+  }
 
-    if (argv.hasOwnProperty("chain")) {
-      config.chain = argv.chain as string;
-    }
+  private async _readTaskRecord(userId: number, taskId: number) {
+    const reportFile = this._buildRecordFilePath(taskId);
 
-    if (argv.hasOwnProperty("shuffle")) {
-      config.shuffleId = argv.shuffle as boolean;
-    }
+    return findRecordById(reportFile, userId);
+  }
 
-    if (argv.hasOwnProperty("force")) {
-      config.force = true;
-    }
+  private _usage() {
+    console.log("Usage:");
+    console.log("yarn task <task-name> <account-id-list> [task-specific-args...]");
+    console.log("options:");
+    console.log("    --no-shuffle     no ID shuffle");
+    console.log("    --chain <chain>  chain identifier defined in taskconfig.json");
+    console.log("    --force          force run task even if there was already an instance");
+  }
 
-    let { chain, shuffleId, force, accountFile, taskDefDir, reportDir, taskTimeout } = config;
+  private _idlistUsage() {
+    console.log("ID list usage");
+    console.log("    Comma seperated: 1,3,5,100");
+    console.log("    Range:           1-100");
+    console.log("    Composite:       2,5,7,10-100");
+    console.log("Note: no space character allowed");
+  }
 
-    if (!chain) throw new Error("no chain specified.");
-
-    if (argv._.length < 2) {
-      usage();
-      return;
-    }
-
-    const taskFileName = argv._[0];
-    if (!taskFileName) throw new TaskFileNotFoundError();
+  private async _loadTaskFile(taskName: string): Promise<Task[]> {
+    let { taskDefDir } = this._config;
 
     const cwd = process.cwd();
-    const pat = `${cwd}/${taskDefDir}/${taskFileName}*.js`;
+    const pat = `${cwd}/${taskDefDir}/${taskName}*.js`;
 
     const files = await glob.async(pat);
     // console.log(pat, files, process.cwd());
 
     if (files?.length != 1) {
-      throw new TaskFileNotFoundError(taskFileName as string);
+      throw new TaskFileNotFoundError(taskName);
     }
 
     const path = files[0];
@@ -101,13 +84,44 @@ export class TaskCliRunner {
 
     console.log(`Task: ${path}`);
 
+    return tasks;
+  }
+
+  public async run() {
+    const argv = await yargs(process.argv.slice(2)).option("force", { type: "boolean" }).parse();
+
+    if (argv.hasOwnProperty("chain")) {
+      this._config.chain = argv.chain as string;
+    }
+
+    if (argv.hasOwnProperty("shuffle")) {
+      this._config.shuffleId = argv.shuffle as boolean;
+    }
+
+    if (argv.hasOwnProperty("force")) {
+      this._config.force = true;
+    }
+
+    let { chain, shuffleId, force, accountFile, taskTimeout } = this._config;
+
+    if (!chain) throw new Error("no chain specified.");
+
+    if (argv._.length < 2) {
+      this._usage();
+      return;
+    }
+
+    const taskName = argv._[0];
+    const tasks = await this._loadTaskFile(taskName as string);
+
     // id list
     let ids = [];
     try {
       ids = parseIds(argv._[1].toString());
     } catch (e) {}
+
     if (ids.length == 0) {
-      idlistUsage();
+      this._idlistUsage();
       return;
     }
 
@@ -120,7 +134,7 @@ export class TaskCliRunner {
 
     // chain info
     if (chain == "auto") {
-      if (!this.hanlder) throw Error("must implement AutoChainHandler to use auto");
+      if (!this._hanlder) throw Error("must implement AutoChainHandler to use auto");
       console.log(`Chain: ${green(chain)}`);
     } else {
       const chainObj = getChainInfo(chain);
@@ -144,11 +158,11 @@ export class TaskCliRunner {
 
       // run middleware
       let effectiveChain = chain;
-      if (this.hanlder) {
+      if (this._hanlder) {
         try {
-          const cloneConfig = { ...config };
+          const cloneConfig = { ...this._config };
           const cloneUser = { ...user };
-          effectiveChain = await this.hanlder(cloneUser, cloneConfig);
+          effectiveChain = await this._hanlder(cloneUser, cloneConfig);
           if (!getChainInfo(effectiveChain)) throw new Error(`undefined chain ${effectiveChain}`);
         } catch (error: any) {
           console.log(red(error));
@@ -166,7 +180,7 @@ export class TaskCliRunner {
         chainObj,
         deployedContracts,
         users,
-        readTaskRecordById: readTaskRecord.bind(this, reportDir, user.id),
+        readTaskRecordById: this._readTaskRecord.bind(this, user.id),
       };
 
       for (let j = 0; j < tasks.length; j++) {
@@ -178,7 +192,7 @@ export class TaskCliRunner {
             console.log(yellow(`-->subtask #${id}: ${name || ""}`));
           }
 
-          const reportFile = buildRecordFilePath(reportDir, id);
+          const reportFile = this._buildRecordFilePath(id);
           if (!force && findRecordById(reportFile, user.id)) {
             console.log("already", green("done"));
             continue;
@@ -191,17 +205,17 @@ export class TaskCliRunner {
           context.deployedContracts = deployedContracts;
 
           if (taskDefinedChain) {
-            const taskChainObj = getChainInfo(taskDefinedChain);
-            const taskDeployedContracts = getDeployedContracts(taskDefinedChain);
+            const chainObj = getChainInfo(taskDefinedChain);
+            const deployedContracts = getDeployedContracts(taskDefinedChain);
 
-            if (!taskChainObj) {
+            if (!chainObj) {
               console.log(red(`task defined chain not defined: ${taskDefinedChain}`));
               break;
             }
 
             context.chain = taskDefinedChain;
-            context.chainObj = taskChainObj;
-            context.deployedContracts = taskDeployedContracts;
+            context.chainObj = chainObj;
+            context.deployedContracts = deployedContracts;
           }
 
           context.id = id;
