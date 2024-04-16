@@ -2,6 +2,9 @@ export type Account = {
   id: number;
   address: string;
   privkey: string;
+  phrase?: string;
+  fund?: number;
+  type?: string;
 };
 
 export type Chain = {
