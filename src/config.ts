@@ -3,7 +3,7 @@ import glob from "fast-glob";
 import { ConfigFileNotExistsError } from "./error";
 import { Chain } from "./index";
 
-export type TaskConfig = {
+export type Config = {
   shuffleId: boolean;
   chain: string | number | "auto";
   taskDefDir: string;
@@ -16,7 +16,7 @@ export type TaskConfig = {
   deployed: { [chain: number | string]: { [name: string]: string } };
 };
 
-export const loadConfig = (): TaskConfig => {
+export const loadConfig = (): Config => {
   const configFile = "./taskconfig.json";
 
   const cwd = process.cwd();
@@ -51,7 +51,7 @@ export const loadConfig = (): TaskConfig => {
     if (keys.length >= 0) configObj.chain = keys[0];
   }
 
-  cached = configObj as TaskConfig;
+  cached = configObj as Config;
 
   return cached;
 };
@@ -66,4 +66,4 @@ export const getDeployedContracts = (chain: string | number) => {
   return cached.deployed[chain];
 };
 
-let cached: TaskConfig;
+let cached: Config;

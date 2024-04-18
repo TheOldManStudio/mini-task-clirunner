@@ -2,9 +2,9 @@ import { Account, Chain } from "index";
 
 export type TaskResult = { [key: string]: any };
 
-export type Arg = { [name: string]: string | number };
+export type TaskArgs = { [name: string]: string | number };
 
-export type Context = {
+export type TaskContext = {
   chain: string | number;
   chainObj: Chain;
 
@@ -18,7 +18,7 @@ export type Context = {
   name: string;
 };
 
-export type TaskAction = (user: Account, ctx: Context, args: Arg) => Promise<TaskResult>;
+export type TaskAction = (user: Account, ctx: TaskContext, args: TaskArgs) => Promise<TaskResult>;
 
 export class Task {
   public id: number;

@@ -11,19 +11,19 @@ import { delay } from "./delay";
 import { randomInRange } from "./random";
 
 import { Task } from "./task";
-import { TaskConfig, getChainInfo, getDeployedContracts, loadConfig } from "./config";
+import { Config, getChainInfo, getDeployedContracts, loadConfig } from "./config";
 
-import { Account, Chain, Context } from "./index";
+import { Account, TaskContext } from "./index";
 
 //
 /**
  * @dev attributes of config are immutable
  */
-export type AutoChainHandler = (user: Account, config: TaskConfig) => Promise<string>;
+export type AutoChainHandler = (user: Account, config: Config) => Promise<string>;
 
 export class TaskCliRunner {
   private _hanlder?: AutoChainHandler;
-  private _config: TaskConfig;
+  private _config: Config;
 
   constructor() {
     this._config = loadConfig();
@@ -175,7 +175,7 @@ export class TaskCliRunner {
       const chainObj = getChainInfo(effectiveChain);
       const deployedContracts = getDeployedContracts(effectiveChain);
 
-      const context: Partial<Context> = {
+      const context: Partial<TaskContext> = {
         chain: effectiveChain,
         chainObj,
         deployedContracts,
@@ -237,7 +237,7 @@ export class TaskCliRunner {
             });
 
           try {
-            let result = await Promise.race([timeout(taskTimeout), func(user, context as Context, parsedArgs)]);
+            let result = await Promise.race([timeout(taskTimeout), func(user, context as TaskContext, parsedArgs)]);
 
             // persist result
             if (result) {

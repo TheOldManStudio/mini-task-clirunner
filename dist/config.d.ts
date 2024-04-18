@@ -1,5 +1,5 @@
 import { Chain } from "./index";
-export type TaskConfig = {
+export type Config = {
     shuffleId: boolean;
     chain: string | number | "auto";
     taskDefDir: string;
@@ -16,7 +16,7 @@ export type TaskConfig = {
         };
     };
 };
-export declare const loadConfig: () => TaskConfig;
+export declare const loadConfig: () => Config;
 export declare const getChainInfo: (chain: string | number) => Chain;
 export declare const getDeployedContracts: (chain: string | number) => {
     [name: string]: string;

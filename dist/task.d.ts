@@ -2,10 +2,10 @@ import { Account, Chain } from "index";
 export type TaskResult = {
     [key: string]: any;
 };
-export type Arg = {
+export type TaskArgs = {
     [name: string]: string | number;
 };
-export type Context = {
+export type TaskContext = {
     chain: string | number;
     chainObj: Chain;
     deployedContracts: {
@@ -16,7 +16,7 @@ export type Context = {
     id: number;
     name: string;
 };
-export type TaskAction = (user: Account, ctx: Context, args: Arg) => Promise<TaskResult>;
+export type TaskAction = (user: Account, ctx: TaskContext, args: TaskArgs) => Promise<TaskResult>;
 export declare class Task {
     id: number;
     name: string | undefined;

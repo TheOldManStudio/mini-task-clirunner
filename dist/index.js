@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomInRange = exports.PluginError = exports.parseIds = exports.persistRecords = exports.removeRecord = exports.readRecords = exports.addNewRecord = exports.getDeployedContracts = exports.getChainInfo = exports.TaskCliRunner = exports.Task = void 0;
+exports.delay = exports.randomInRange = exports.parseIds = exports.persistRecords = exports.removeRecord = exports.readRecords = exports.addNewRecord = exports.getDeployedContracts = exports.getChainInfo = exports.TaskCliRunner = exports.Task = void 0;
 var task_1 = require("./task");
 Object.defineProperty(exports, "Task", { enumerable: true, get: function () { return task_1.Task; } });
 var cli_runner_1 = require("./cli_runner");
@@ -18,9 +18,9 @@ Object.defineProperty(exports, "removeRecord", { enumerable: true, get: function
 Object.defineProperty(exports, "persistRecords", { enumerable: true, get: function () { return csv_1.persistRecords; } });
 var id_parser_1 = require("./id_parser");
 Object.defineProperty(exports, "parseIds", { enumerable: true, get: function () { return id_parser_1.parseIds; } });
-var error_1 = require("./error");
-Object.defineProperty(exports, "PluginError", { enumerable: true, get: function () { return error_1.PluginError; } });
 var random_1 = require("./random");
 Object.defineProperty(exports, "randomInRange", { enumerable: true, get: function () { return random_1.randomInRange; } });
+var delay_1 = require("./delay");
+Object.defineProperty(exports, "delay", { enumerable: true, get: function () { return delay_1.delay; } });
 const task_2 = __importDefault(require("./task"));
 exports.default = task_2.default;
