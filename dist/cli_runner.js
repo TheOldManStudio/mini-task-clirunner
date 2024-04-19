@@ -181,12 +181,13 @@ class TaskCliRunner {
                             const chainObj = (0, config_1.getChainInfo)(taskDefinedChain);
                             const deployedContracts = (0, config_1.getDeployedContracts)(taskDefinedChain);
                             if (!chainObj) {
-                                console.log((0, safe_1.red)(`task defined chain not defined: ${taskDefinedChain}`));
+                                console.log((0, safe_1.red)(`task-specified chain undefined: ${taskDefinedChain}`));
                                 break;
                             }
                             context.chain = taskDefinedChain;
                             context.chainObj = chainObj;
                             context.deployedContracts = deployedContracts;
+                            console.log((0, safe_1.yellow)(`@ ${chainObj.chain}`));
                         }
                         context.id = id;
                         context.name = name;
