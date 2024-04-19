@@ -217,7 +217,7 @@ export class TaskCliRunner {
             context.chainObj = chainObj;
             context.deployedContracts = deployedContracts;
 
-            console.log(yellow(`@: ${chainObj.chain}`));
+            console.log(yellow(`@ ${chainObj.chain}`));
           }
 
           context.id = id;
