@@ -259,6 +259,7 @@ export class TaskCliRunner {
             if (e == timeoutErr) {
               console.log(red(e));
             } else {
+              console.log(red("failed"));
               throw e;
             }
           } finally {

@@ -224,6 +224,7 @@ class TaskCliRunner {
                                 console.log((0, safe_1.red)(e));
                             }
                             else {
+                                console.log((0, safe_1.red)("failed"));
                                 throw e;
                             }
                         }
