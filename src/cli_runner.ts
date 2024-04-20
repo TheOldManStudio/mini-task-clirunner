@@ -103,7 +103,7 @@ export class TaskCliRunner {
     const tasks = Task.tasklist;
     if (tasks.length <= 0) throw new NoTaskDefinedError();
 
-    console.log(`Task: ${path}`);
+    console.log(green(`[task] ${path}`));
 
     return tasks;
   }
@@ -156,11 +156,11 @@ export class TaskCliRunner {
     // chain info
     if (chain == "auto") {
       if (!this._hanlder) throw "must implement AutoChainHandler to use auto";
-      console.log(`Chain: ${green(chain)}`);
+      console.log(green(`[chain] ${chain}`));
     } else {
       const chainObj = getChainInfo(chain);
       if (!chainObj) throw `chain undefined: ${chain}`;
-      console.log(`Chain: ${green(chainObj.chain || (chain as string))}`);
+      console.log(green(`[chain] ${chainObj.chain || (chain as string)}`));
     }
 
     // read all accounts

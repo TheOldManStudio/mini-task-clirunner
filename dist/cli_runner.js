@@ -89,7 +89,7 @@ class TaskCliRunner {
             const tasks = task_1.Task.tasklist;
             if (tasks.length <= 0)
                 throw new error_1.NoTaskDefinedError();
-            console.log(`Task: ${path}`);
+            console.log((0, safe_1.green)(`[task] ${path}`));
             return tasks;
         });
     }
@@ -135,13 +135,13 @@ class TaskCliRunner {
             if (chain == "auto") {
                 if (!this._hanlder)
                     throw "must implement AutoChainHandler to use auto";
-                console.log(`Chain: ${(0, safe_1.green)(chain)}`);
+                console.log((0, safe_1.green)(`[chain] ${chain}`));
             }
             else {
                 const chainObj = (0, config_1.getChainInfo)(chain);
                 if (!chainObj)
                     throw `chain undefined: ${chain}`;
-                console.log(`Chain: ${(0, safe_1.green)(chainObj.chain || chain)}`);
+                console.log((0, safe_1.green)(`[chain] ${chainObj.chain || chain}`));
             }
             // read all accounts
             const users = (0, csv_1.readRecords)(accountFile);
