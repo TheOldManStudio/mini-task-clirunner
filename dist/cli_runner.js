@@ -107,7 +107,7 @@ class TaskCliRunner {
             }
             let { chain, shuffleId, force, accountFile, taskTimeout } = this._config;
             if (!chain)
-                throw new Error("no chain specified.");
+                throw "no chain specified.";
             if (argv._.length < 2) {
                 this._usage();
                 return;
@@ -134,59 +134,48 @@ class TaskCliRunner {
             // chain info
             if (chain == "auto") {
                 if (!this._hanlder)
-                    throw Error("must implement AutoChainHandler to use auto");
+                    throw "must implement AutoChainHandler to use auto";
                 console.log(`Chain: ${(0, safe_1.green)(chain)}`);
             }
             else {
                 const chainObj = (0, config_1.getChainInfo)(chain);
                 if (!chainObj)
-                    throw new Error(`undefined chain ${chain}`);
+                    throw `chain undefined: ${chain}`;
                 console.log(`Chain: ${(0, safe_1.green)(chainObj.chain || chain)}`);
             }
             // read all accounts
             const users = (0, csv_1.readRecords)(accountFile);
             for (let i = 0; i < ids.length; i++) {
-                console.log();
-                this._run++;
-                const user = lodash_1.default.find(users, { id: ids[i] });
-                if (!user) {
-                    this._failed++;
-                    console.log((0, safe_1.yellow)(`[${i + 1}/${ids.length}] #${ids[i]}`));
-                    console.log((0, safe_1.red)("failed"));
-                    console.log(`no account found by id: ${ids[i]}`);
-                    continue;
-                }
-                console.log((0, safe_1.yellow)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
-                // run handler
-                let effectiveChain = chain;
-                if (this._hanlder) {
-                    try {
+                try {
+                    console.log();
+                    this._run++;
+                    const user = lodash_1.default.find(users, { id: ids[i] });
+                    if (!user) {
+                        console.log((0, safe_1.yellow)(`[${i + 1}/${ids.length}] #${ids[i]}`));
+                        throw `no account found by id: ${ids[i]}`;
+                    }
+                    console.log((0, safe_1.yellow)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
+                    // run handler
+                    let effectiveChain = chain;
+                    if (this._hanlder) {
                         const cloneConfig = Object.assign({}, this._config);
                         const cloneUser = Object.assign({}, user);
                         effectiveChain = yield this._hanlder(cloneUser, cloneConfig);
                         if (!(0, config_1.getChainInfo)(effectiveChain))
-                            throw new Error(`undefined chain ${effectiveChain}`);
+                            throw `chain undefined: ${effectiveChain}`;
                     }
-                    catch (error) {
-                        this._failed++;
-                        console.log((0, safe_1.red)("failed"));
-                        console.log(error);
-                        continue;
-                    }
-                }
-                // context
-                const chainObj = (0, config_1.getChainInfo)(effectiveChain);
-                const deployedContracts = (0, config_1.getDeployedContracts)(effectiveChain);
-                const context = {
-                    chain: effectiveChain,
-                    chainObj,
-                    deployedContracts,
-                    users,
-                    readTaskRecordById: this._readTaskRecord.bind(this, user.id),
-                };
-                for (let j = 0; j < tasks.length; j++) {
-                    const task = tasks[j];
-                    try {
+                    // context
+                    const chainObj = (0, config_1.getChainInfo)(effectiveChain);
+                    const deployedContracts = (0, config_1.getDeployedContracts)(effectiveChain);
+                    const context = {
+                        chain: effectiveChain,
+                        chainObj,
+                        deployedContracts,
+                        users,
+                        readTaskRecordById: this._readTaskRecord.bind(this, user.id),
+                    };
+                    for (let j = 0; j < tasks.length; j++) {
+                        const task = tasks[j];
                         const { id, name, delayspec, argspec, func, chainId: taskDefinedChain } = task;
                         if (tasks.length > 1) {
                             console.log((0, safe_1.yellow)(`-->subtask #${id}: ${name || ""}`));
@@ -204,8 +193,7 @@ class TaskCliRunner {
                             const chainObj = (0, config_1.getChainInfo)(taskDefinedChain);
                             const deployedContracts = (0, config_1.getDeployedContracts)(taskDefinedChain);
                             if (!chainObj) {
-                                console.log((0, safe_1.red)(`task-specified chain undefined: ${taskDefinedChain}`));
-                                break;
+                                throw `task-specified chain undefined: ${taskDefinedChain}`;
                             }
                             context.chain = taskDefinedChain;
                             context.chainObj = chainObj;
@@ -231,19 +219,10 @@ class TaskCliRunner {
                             // persist result
                             if (result) {
                                 if (typeof result != "object")
-                                    throw new Error("result should be a key-value object {}");
+                                    throw "should return object {}";
                                 yield (0, csv_1.addNewRecord)(reportFile, Object.assign({ id: user.id, address: user.address }, result));
                             }
                             console.log((0, safe_1.green)("done"));
-                        }
-                        catch (e) {
-                            if (e == timeoutErr) {
-                                console.log((0, safe_1.red)(e));
-                            }
-                            else {
-                                console.log((0, safe_1.red)("failed"));
-                                throw e;
-                            }
                         }
                         finally {
                             if (timeoutId)
@@ -266,11 +245,11 @@ class TaskCliRunner {
                             }
                         }
                     }
-                    catch (error) {
-                        this._failed++;
-                        console.warn(error);
-                        break;
-                    }
+                }
+                catch (error) {
+                    this._failed++;
+                    console.log((0, safe_1.red)("failed"));
+                    console.warn(error);
                 }
             }
             this._result();

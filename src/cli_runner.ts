@@ -125,7 +125,7 @@ export class TaskCliRunner {
 
     let { chain, shuffleId, force, accountFile, taskTimeout } = this._config;
 
-    if (!chain) throw new Error("no chain specified.");
+    if (!chain) throw "no chain specified.";
 
     if (argv._.length < 2) {
       this._usage();
@@ -155,11 +155,11 @@ export class TaskCliRunner {
 
     // chain info
     if (chain == "auto") {
-      if (!this._hanlder) throw Error("must implement AutoChainHandler to use auto");
+      if (!this._hanlder) throw "must implement AutoChainHandler to use auto";
       console.log(`Chain: ${green(chain)}`);
     } else {
       const chainObj = getChainInfo(chain);
-      if (!chainObj) throw new Error(`undefined chain ${chain}`);
+      if (!chainObj) throw `chain undefined: ${chain}`;
       console.log(`Chain: ${green(chainObj.chain || (chain as string))}`);
     }
 
@@ -167,53 +167,44 @@ export class TaskCliRunner {
     const users = readRecords(accountFile);
 
     for (let i = 0; i < ids.length; i++) {
-      console.log();
+      try {
+        console.log();
 
-      this._run++;
+        this._run++;
 
-      const user = _.find(users, { id: ids[i] });
-      if (!user) {
-        this._failed++;
-        console.log(yellow(`[${i + 1}/${ids.length}] #${ids[i]}`));
-        console.log(red("failed"));
-        console.log(`no account found by id: ${ids[i]}`);
-        continue;
-      }
+        const user = _.find(users, { id: ids[i] });
+        if (!user) {
+          console.log(yellow(`[${i + 1}/${ids.length}] #${ids[i]}`));
+          throw `no account found by id: ${ids[i]}`;
+        }
 
-      console.log(yellow(`[${i + 1}/${ids.length}]`), yellow(`#${user.id}, ${user.address}`));
+        console.log(yellow(`[${i + 1}/${ids.length}]`), yellow(`#${user.id}, ${user.address}`));
 
-      // run handler
-      let effectiveChain = chain;
-      if (this._hanlder) {
-        try {
+        // run handler
+        let effectiveChain = chain;
+        if (this._hanlder) {
           const cloneConfig = { ...this._config };
           const cloneUser = { ...user };
           effectiveChain = await this._hanlder(cloneUser, cloneConfig);
-          if (!getChainInfo(effectiveChain)) throw new Error(`undefined chain ${effectiveChain}`);
-        } catch (error: any) {
-          this._failed++;
-          console.log(red("failed"));
-          console.log(error);
-          continue;
+          if (!getChainInfo(effectiveChain)) throw `chain undefined: ${effectiveChain}`;
         }
-      }
 
-      // context
+        // context
 
-      const chainObj = getChainInfo(effectiveChain);
-      const deployedContracts = getDeployedContracts(effectiveChain);
+        const chainObj = getChainInfo(effectiveChain);
+        const deployedContracts = getDeployedContracts(effectiveChain);
 
-      const context: Partial<TaskContext> = {
-        chain: effectiveChain,
-        chainObj,
-        deployedContracts,
-        users,
-        readTaskRecordById: this._readTaskRecord.bind(this, user.id),
-      };
+        const context: Partial<TaskContext> = {
+          chain: effectiveChain,
+          chainObj,
+          deployedContracts,
+          users,
+          readTaskRecordById: this._readTaskRecord.bind(this, user.id),
+        };
 
-      for (let j = 0; j < tasks.length; j++) {
-        const task = tasks[j];
-        try {
+        for (let j = 0; j < tasks.length; j++) {
+          const task = tasks[j];
+
           const { id, name, delayspec, argspec, func, chainId: taskDefinedChain } = task;
 
           if (tasks.length > 1) {
@@ -237,8 +228,7 @@ export class TaskCliRunner {
             const deployedContracts = getDeployedContracts(taskDefinedChain);
 
             if (!chainObj) {
-              console.log(red(`task-specified chain undefined: ${taskDefinedChain}`));
-              break;
+              throw `task-specified chain undefined: ${taskDefinedChain}`;
             }
 
             context.chain = taskDefinedChain;
@@ -271,18 +261,11 @@ export class TaskCliRunner {
 
             // persist result
             if (result) {
-              if (typeof result != "object") throw new Error("result should be a key-value object {}");
+              if (typeof result != "object") throw "should return object {}";
               await addNewRecord(reportFile, { id: user.id, address: user.address, ...result });
             }
 
             console.log(green("done"));
-          } catch (e: any) {
-            if (e == timeoutErr) {
-              console.log(red(e));
-            } else {
-              console.log(red("failed"));
-              throw e;
-            }
           } finally {
             if (timeoutId) clearTimeout(timeoutId);
           }
@@ -301,11 +284,11 @@ export class TaskCliRunner {
               }
             }
           }
-        } catch (error) {
-          this._failed++;
-          console.warn(error);
-          break;
         }
+      } catch (error) {
+        this._failed++;
+        console.log(red("failed"));
+        console.warn(error);
       }
     }
 

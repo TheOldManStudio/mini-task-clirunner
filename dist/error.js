@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PluginError = exports.ConfigFileNotExistsError = exports.InvalidTaskArgsError = exports.NoTaskDefinedError = exports.TaskFileNotFoundError = void 0;
+exports.ConfigFileNotExistsError = exports.InvalidTaskArgsError = exports.NoTaskDefinedError = exports.TaskFileNotFoundError = void 0;
 class TaskFileNotFoundError extends Error {
 }
 exports.TaskFileNotFoundError = TaskFileNotFoundError;
@@ -13,6 +13,3 @@ exports.InvalidTaskArgsError = InvalidTaskArgsError;
 class ConfigFileNotExistsError extends Error {
 }
 exports.ConfigFileNotExistsError = ConfigFileNotExistsError;
-class PluginError extends Error {
-}
-exports.PluginError = PluginError;
