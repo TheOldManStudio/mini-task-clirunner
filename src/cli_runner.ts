@@ -26,6 +26,13 @@ export class TaskCliRunner {
   private _config: Config;
 
   constructor() {
+    process.on("uncaughtException", (error: Error) => {
+      console.log(red(error.message));
+    });
+    process.on("unhandledRejection", (reason: unknown) => {
+      console.log(red(reason.toString()));
+    });
+
     this._config = loadConfig();
   }
 
