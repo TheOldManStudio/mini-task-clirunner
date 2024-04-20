@@ -27,10 +27,10 @@ const config_1 = require("./config");
 class TaskCliRunner {
     constructor() {
         process.on("uncaughtException", (error) => {
-            console.log((0, safe_1.red)(error.message));
+            console.log((0, safe_1.red)("warn:"), error.message);
         });
         process.on("unhandledRejection", (reason) => {
-            console.log((0, safe_1.red)(reason.toString()));
+            console.log((0, safe_1.red)("warn:"), reason);
         });
         this._config = (0, config_1.loadConfig)();
     }
