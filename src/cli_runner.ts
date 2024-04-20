@@ -14,10 +14,10 @@ import { Task } from "./task";
 import { Config, getChainInfo, getDeployedContracts, loadConfig } from "./config";
 
 import { Account, TaskContext } from "./index";
+import { exit } from "process";
 
-//
 /**
- * @dev attributes of config are immutable
+ * @dev return chain identifier. attributes of config are immutable
  */
 export type AutoChainHandler = (user: Account, config: Config) => Promise<string>;
 
@@ -25,12 +25,21 @@ export class TaskCliRunner {
   private _hanlder?: AutoChainHandler;
   private _config: Config;
 
+  private _run: number = 0;
+  private _failed: number = 0;
+
   constructor() {
     process.on("uncaughtException", (error: Error) => {
       console.log(red("warn:"), error.message);
     });
+
     process.on("unhandledRejection", (reason: unknown) => {
       console.log(red("warn:"), reason);
+    });
+
+    process.on("SIGINT", () => {
+      this._result();
+      exit(1);
     });
 
     this._config = loadConfig();
@@ -49,6 +58,11 @@ export class TaskCliRunner {
     const reportFile = this._buildRecordFilePath(taskId);
 
     return findRecordById(reportFile, userId);
+  }
+
+  private _result() {
+    console.log();
+    console.log("----", "run", this._run, "failed", red(`${this._failed}`), "----");
   }
 
   private _usage() {
@@ -135,7 +149,7 @@ export class TaskCliRunner {
     // randomize ids
     if (shuffleId) ids = _.shuffle(ids);
 
-    // remaining args to task
+    // remaining args goes to task
     let taskArgs: (string | number)[] = [];
     if (argv._.length > 2) taskArgs = argv._.slice(2);
 
@@ -153,17 +167,22 @@ export class TaskCliRunner {
     const users = readRecords(accountFile);
 
     for (let i = 0; i < ids.length; i++) {
-      const user = _.find(users, { id: ids[i] });
+      console.log();
 
+      this._run++;
+
+      const user = _.find(users, { id: ids[i] });
       if (!user) {
+        this._failed++;
+        console.log(yellow(`[${i + 1}/${ids.length}] #${ids[i]}`));
+        console.log(red("failed"));
         console.log(`no account found by id: ${ids[i]}`);
         continue;
       }
 
-      console.log();
-      console.log(green(`[${i + 1}/${ids.length}]`), yellow(`#${user.id}, ${user.address}`));
+      console.log(yellow(`[${i + 1}/${ids.length}]`), yellow(`#${user.id}, ${user.address}`));
 
-      // run middleware
+      // run handler
       let effectiveChain = chain;
       if (this._hanlder) {
         try {
@@ -172,7 +191,9 @@ export class TaskCliRunner {
           effectiveChain = await this._hanlder(cloneUser, cloneConfig);
           if (!getChainInfo(effectiveChain)) throw new Error(`undefined chain ${effectiveChain}`);
         } catch (error: any) {
-          console.log(red(error));
+          this._failed++;
+          console.log(red("failed"));
+          console.log(error);
           continue;
         }
       }
@@ -281,10 +302,13 @@ export class TaskCliRunner {
             }
           }
         } catch (error) {
+          this._failed++;
           console.warn(error);
           break;
         }
       }
     }
+
+    this._result();
   }
 }

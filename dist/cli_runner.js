@@ -24,13 +24,20 @@ const delay_1 = require("./delay");
 const random_1 = require("./random");
 const task_1 = require("./task");
 const config_1 = require("./config");
+const process_1 = require("process");
 class TaskCliRunner {
     constructor() {
+        this._run = 0;
+        this._failed = 0;
         process.on("uncaughtException", (error) => {
             console.log((0, safe_1.red)("warn:"), error.message);
         });
         process.on("unhandledRejection", (reason) => {
             console.log((0, safe_1.red)("warn:"), reason);
+        });
+        process.on("SIGINT", () => {
+            this._result();
+            (0, process_1.exit)(1);
         });
         this._config = (0, config_1.loadConfig)();
     }
@@ -46,6 +53,10 @@ class TaskCliRunner {
             const reportFile = this._buildRecordFilePath(taskId);
             return (0, csv_1.findRecordById)(reportFile, userId);
         });
+    }
+    _result() {
+        console.log();
+        console.log("----", "run", this._run, "failed", (0, safe_1.red)(`${this._failed}`), "----");
     }
     _usage() {
         console.log("Usage:");
@@ -116,7 +127,7 @@ class TaskCliRunner {
             // randomize ids
             if (shuffleId)
                 ids = lodash_1.default.shuffle(ids);
-            // remaining args to task
+            // remaining args goes to task
             let taskArgs = [];
             if (argv._.length > 2)
                 taskArgs = argv._.slice(2);
@@ -135,14 +146,18 @@ class TaskCliRunner {
             // read all accounts
             const users = (0, csv_1.readRecords)(accountFile);
             for (let i = 0; i < ids.length; i++) {
+                console.log();
+                this._run++;
                 const user = lodash_1.default.find(users, { id: ids[i] });
                 if (!user) {
+                    this._failed++;
+                    console.log((0, safe_1.yellow)(`[${i + 1}/${ids.length}] #${ids[i]}`));
+                    console.log((0, safe_1.red)("failed"));
                     console.log(`no account found by id: ${ids[i]}`);
                     continue;
                 }
-                console.log();
-                console.log((0, safe_1.green)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
-                // run middleware
+                console.log((0, safe_1.yellow)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
+                // run handler
                 let effectiveChain = chain;
                 if (this._hanlder) {
                     try {
@@ -153,7 +168,9 @@ class TaskCliRunner {
                             throw new Error(`undefined chain ${effectiveChain}`);
                     }
                     catch (error) {
-                        console.log((0, safe_1.red)(error));
+                        this._failed++;
+                        console.log((0, safe_1.red)("failed"));
+                        console.log(error);
                         continue;
                     }
                 }
@@ -250,11 +267,13 @@ class TaskCliRunner {
                         }
                     }
                     catch (error) {
+                        this._failed++;
                         console.warn(error);
                         break;
                     }
                 }
             }
+            this._result();
         });
     }
 }
