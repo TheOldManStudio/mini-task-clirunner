@@ -10,6 +10,7 @@
   "chains": {
     "ethereum": {
       "chainId": 1,
+      "chain": "Ethereum",
       "network": "mainnet",
       "rpc": "https://eth.melos.studio/",
       "coin": "eth"

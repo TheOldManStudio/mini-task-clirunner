@@ -130,7 +130,7 @@ class TaskCliRunner {
                 const chainObj = (0, config_1.getChainInfo)(chain);
                 if (!chainObj)
                     throw new Error(`undefined chain ${chain}`);
-                console.log(`Chain: ${(0, safe_1.green)(chainObj.chain)}`);
+                console.log(`Chain: ${(0, safe_1.green)(chainObj.chain || chain)}`);
             }
             // read all accounts
             const users = (0, csv_1.readRecords)(accountFile);
@@ -193,7 +193,7 @@ class TaskCliRunner {
                             context.chain = taskDefinedChain;
                             context.chainObj = chainObj;
                             context.deployedContracts = deployedContracts;
-                            console.log((0, safe_1.yellow)(`@ ${chainObj.chain}`));
+                            console.log((0, safe_1.yellow)(`@ ${chainObj.chain || taskDefinedChain}`));
                         }
                         context.id = id;
                         context.name = name;
