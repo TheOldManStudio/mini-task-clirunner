@@ -29,9 +29,9 @@ export class TaskCliRunner {
   private _failed: number = 0;
 
   constructor() {
-    process.on("uncaughtException", (error: Error) => {
-      console.log(red("warn:"), error.message);
-    });
+    // process.on("uncaughtException", (error: Error) => {
+    //   console.log(red("warn:"), error.message);
+    // });
 
     process.on("unhandledRejection", (reason: unknown) => {
       console.log(red("warn:"), reason);

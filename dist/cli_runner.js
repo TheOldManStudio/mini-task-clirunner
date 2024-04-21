@@ -27,11 +27,11 @@ const config_1 = require("./config");
 const process_1 = require("process");
 class TaskCliRunner {
     constructor() {
+        // process.on("uncaughtException", (error: Error) => {
+        //   console.log(red("warn:"), error.message);
+        // });
         this._run = 0;
         this._failed = 0;
-        process.on("uncaughtException", (error) => {
-            console.log((0, safe_1.red)("warn:"), error.message);
-        });
         process.on("unhandledRejection", (reason) => {
             console.log((0, safe_1.red)("warn:"), reason);
         });
