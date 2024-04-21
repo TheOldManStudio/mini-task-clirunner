@@ -27,9 +27,6 @@ const config_1 = require("./config");
 const process_1 = require("process");
 class TaskCliRunner {
     constructor() {
-        // process.on("uncaughtException", (error: Error) => {
-        //   console.log(red("warn:"), error.message);
-        // });
         this._run = 0;
         this._failed = 0;
         process.on("unhandledRejection", (reason) => {
@@ -107,7 +104,7 @@ class TaskCliRunner {
             }
             let { chain, shuffleId, force, accountFile, taskTimeout } = this._config;
             if (!chain)
-                throw "no chain specified.";
+                throw new error_1.ConfigError("no chain specified");
             if (argv._.length < 2) {
                 this._usage();
                 return;
@@ -120,7 +117,7 @@ class TaskCliRunner {
                 ids = (0, id_parser_1.parseIds)(argv._[1].toString());
             }
             catch (e) { }
-            if (ids.length == 0) {
+            if (ids.length <= 0) {
                 this._idlistUsage();
                 return;
             }
@@ -134,13 +131,13 @@ class TaskCliRunner {
             // chain info
             if (chain == "auto") {
                 if (!this._hanlder)
-                    throw "must implement AutoChainHandler to use auto";
+                    throw new error_1.ConfigError("must implement AutoChainHandler to use auto");
                 console.log((0, safe_1.green)(`[chain] ${chain}`));
             }
             else {
                 const chainObj = (0, config_1.getChainInfo)(chain);
                 if (!chainObj)
-                    throw `chain undefined: ${chain}`;
+                    throw new error_1.ChainUndefinedError(chain);
                 console.log((0, safe_1.green)(`[chain] ${chainObj.chain || chain} ${chainObj.network}`));
             }
             // read all accounts
@@ -152,7 +149,7 @@ class TaskCliRunner {
                     const user = lodash_1.default.find(users, { id: ids[i] });
                     if (!user) {
                         console.log((0, safe_1.yellow)(`[${i + 1}/${ids.length}] #${ids[i]}`));
-                        throw `no account found by id: ${ids[i]}`;
+                        throw new error_1.AccountNotFoundError(ids[i]);
                     }
                     console.log((0, safe_1.yellow)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
                     // run handler
@@ -162,7 +159,7 @@ class TaskCliRunner {
                         const cloneUser = Object.assign({}, user);
                         effectiveChain = yield this._hanlder(cloneUser, cloneConfig);
                         if (!(0, config_1.getChainInfo)(effectiveChain))
-                            throw `chain undefined: ${effectiveChain}`;
+                            throw new error_1.ChainUndefinedError(effectiveChain);
                     }
                     // context
                     const chainObj = (0, config_1.getChainInfo)(effectiveChain);
@@ -193,7 +190,7 @@ class TaskCliRunner {
                             const chainObj = (0, config_1.getChainInfo)(taskDefinedChain);
                             const deployedContracts = (0, config_1.getDeployedContracts)(taskDefinedChain);
                             if (!chainObj) {
-                                throw `task-specified chain undefined: ${taskDefinedChain}`;
+                                throw new error_1.ChainUndefinedError(taskDefinedChain);
                             }
                             context.chain = taskDefinedChain;
                             context.chainObj = chainObj;
@@ -219,7 +216,7 @@ class TaskCliRunner {
                             // persist result
                             if (result) {
                                 if (typeof result != "object")
-                                    throw "should return object {}";
+                                    throw new error_1.ReturnNonObjectError("should return key/value object");
                                 yield (0, csv_1.addNewRecord)(reportFile, Object.assign({ id: user.id, address: user.address }, result));
                             }
                             console.log((0, safe_1.green)("done"));

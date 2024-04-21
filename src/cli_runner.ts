@@ -5,7 +5,14 @@ import glob from "fast-glob";
 
 import { parseIds } from "./id_parser";
 import { addNewRecord, readRecords, findRecordById } from "./csv";
-import { NoTaskDefinedError, TaskFileNotFoundError } from "./error";
+import {
+  AccountNotFoundError,
+  ConfigError,
+  NoTaskDefinedError,
+  ReturnNonObjectError,
+  TaskFileNotFoundError,
+  ChainUndefinedError,
+} from "./error";
 
 import { delay } from "./delay";
 import { randomInRange } from "./random";
@@ -29,10 +36,6 @@ export class TaskCliRunner {
   private _failed: number = 0;
 
   constructor() {
-    // process.on("uncaughtException", (error: Error) => {
-    //   console.log(red("warn:"), error.message);
-    // });
-
     process.on("unhandledRejection", (reason: unknown) => {
       console.log(red("warn:"), reason);
     });
@@ -125,7 +128,7 @@ export class TaskCliRunner {
 
     let { chain, shuffleId, force, accountFile, taskTimeout } = this._config;
 
-    if (!chain) throw "no chain specified.";
+    if (!chain) throw new ConfigError("no chain specified");
 
     if (argv._.length < 2) {
       this._usage();
@@ -141,7 +144,7 @@ export class TaskCliRunner {
       ids = parseIds(argv._[1].toString());
     } catch (e) {}
 
-    if (ids.length == 0) {
+    if (ids.length <= 0) {
       this._idlistUsage();
       return;
     }
@@ -155,11 +158,11 @@ export class TaskCliRunner {
 
     // chain info
     if (chain == "auto") {
-      if (!this._hanlder) throw "must implement AutoChainHandler to use auto";
+      if (!this._hanlder) throw new ConfigError("must implement AutoChainHandler to use auto");
       console.log(green(`[chain] ${chain}`));
     } else {
       const chainObj = getChainInfo(chain);
-      if (!chainObj) throw `chain undefined: ${chain}`;
+      if (!chainObj) throw new ChainUndefinedError(chain as string);
       console.log(green(`[chain] ${chainObj.chain || (chain as string)} ${chainObj.network}`));
     }
 
@@ -175,7 +178,7 @@ export class TaskCliRunner {
         const user = _.find(users, { id: ids[i] });
         if (!user) {
           console.log(yellow(`[${i + 1}/${ids.length}] #${ids[i]}`));
-          throw `no account found by id: ${ids[i]}`;
+          throw new AccountNotFoundError(ids[i]);
         }
 
         console.log(yellow(`[${i + 1}/${ids.length}]`), yellow(`#${user.id}, ${user.address}`));
@@ -186,7 +189,8 @@ export class TaskCliRunner {
           const cloneConfig = { ...this._config };
           const cloneUser = { ...user };
           effectiveChain = await this._hanlder(cloneUser, cloneConfig);
-          if (!getChainInfo(effectiveChain)) throw `chain undefined: ${effectiveChain}`;
+
+          if (!getChainInfo(effectiveChain)) throw new ChainUndefinedError(effectiveChain as string);
         }
 
         // context
@@ -228,7 +232,7 @@ export class TaskCliRunner {
             const deployedContracts = getDeployedContracts(taskDefinedChain);
 
             if (!chainObj) {
-              throw `task-specified chain undefined: ${taskDefinedChain}`;
+              throw new ChainUndefinedError(taskDefinedChain as string);
             }
 
             context.chain = taskDefinedChain;
@@ -261,7 +265,7 @@ export class TaskCliRunner {
 
             // persist result
             if (result) {
-              if (typeof result != "object") throw "should return object {}";
+              if (typeof result != "object") throw new ReturnNonObjectError("should return key/value object");
               await addNewRecord(reportFile, { id: user.id, address: user.address, ...result });
             }
 
