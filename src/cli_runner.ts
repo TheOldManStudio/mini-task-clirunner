@@ -65,7 +65,7 @@ export class TaskCliRunner {
 
   private _result() {
     console.log();
-    console.log("----", "run", this._run, "failed", red(`${this._failed}`), "----");
+    console.log("✨ ", "run", this._run, "failed", red(`${this._failed}`));
   }
 
   private _usage() {

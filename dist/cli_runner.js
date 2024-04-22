@@ -53,7 +53,7 @@ class TaskCliRunner {
     }
     _result() {
         console.log();
-        console.log("----", "run", this._run, "failed", (0, safe_1.red)(`${this._failed}`), "----");
+        console.log("✨ ", "run", this._run, "failed", (0, safe_1.red)(`${this._failed}`));
     }
     _usage() {
         console.log("Usage:");
