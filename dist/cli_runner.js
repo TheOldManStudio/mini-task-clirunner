@@ -145,7 +145,6 @@ class TaskCliRunner {
             for (let i = 0; i < ids.length; i++) {
                 try {
                     console.log();
-                    this._run++;
                     const user = lodash_1.default.find(users, { id: ids[i] });
                     if (!user) {
                         console.log((0, safe_1.green)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${ids[i]}`));
@@ -247,6 +246,9 @@ class TaskCliRunner {
                     this._failed++;
                     console.log((0, safe_1.red)("failed"));
                     console.warn(error);
+                }
+                finally {
+                    this._run++;
                 }
             }
             this._result();

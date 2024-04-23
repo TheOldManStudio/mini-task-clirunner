@@ -173,8 +173,6 @@ export class TaskCliRunner {
       try {
         console.log();
 
-        this._run++;
-
         const user = _.find(users, { id: ids[i] });
         if (!user) {
           console.log(green(`[${i + 1}/${ids.length}]`), yellow(`#${ids[i]}`));
@@ -293,6 +291,8 @@ export class TaskCliRunner {
         this._failed++;
         console.log(red("failed"));
         console.warn(error);
+      } finally {
+        this._run++;
       }
     }
 
