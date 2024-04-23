@@ -177,11 +177,11 @@ export class TaskCliRunner {
 
         const user = _.find(users, { id: ids[i] });
         if (!user) {
-          console.log(yellow(`[${i + 1}/${ids.length}] #${ids[i]}`));
+          console.log(green(`[${i + 1}/${ids.length}]`), yellow(`#${ids[i]}`));
           throw new AccountNotFoundError(ids[i]);
         }
 
-        console.log(yellow(`[${i + 1}/${ids.length}]`), yellow(`#${user.id}, ${user.address}`));
+        console.log(green(`[${i + 1}/${ids.length}]`), yellow(`#${user.id}, ${user.address}`));
 
         // run handler
         let effectiveChain = chain;

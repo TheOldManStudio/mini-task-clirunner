@@ -148,10 +148,10 @@ class TaskCliRunner {
                     this._run++;
                     const user = lodash_1.default.find(users, { id: ids[i] });
                     if (!user) {
-                        console.log((0, safe_1.yellow)(`[${i + 1}/${ids.length}] #${ids[i]}`));
+                        console.log((0, safe_1.green)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${ids[i]}`));
                         throw new error_1.AccountNotFoundError(ids[i]);
                     }
-                    console.log((0, safe_1.yellow)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
+                    console.log((0, safe_1.green)(`[${i + 1}/${ids.length}]`), (0, safe_1.yellow)(`#${user.id}, ${user.address}`));
                     // run handler
                     let effectiveChain = chain;
                     if (this._hanlder) {
