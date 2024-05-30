@@ -216,7 +216,7 @@ class TaskCliRunner {
                             if (result) {
                                 if (typeof result != "object")
                                     throw new error_1.ReturnNonObjectError("should return key/value object");
-                                yield (0, csv_1.addNewRecord)(reportFile, Object.assign({ id: user.id, address: user.address }, result));
+                                yield (0, csv_1.addNewRecord)(reportFile, Object.assign(Object.assign({ id: user.id, address: user.address }, result), { timestamp: Math.floor(Date.now() / 1000) }));
                             }
                             console.log((0, safe_1.green)("done"));
                         }

@@ -264,7 +264,12 @@ export class TaskCliRunner {
             // persist result
             if (result) {
               if (typeof result != "object") throw new ReturnNonObjectError("should return key/value object");
-              await addNewRecord(reportFile, { id: user.id, address: user.address, ...result });
+              await addNewRecord(reportFile, {
+                id: user.id,
+                address: user.address,
+                ...result,
+                timestamp: Math.floor(Date.now() / 1000),
+              });
             }
 
             console.log(green("done"));
