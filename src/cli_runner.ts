@@ -112,7 +112,10 @@ export class TaskCliRunner {
   }
 
   public async run() {
-    const argv = await yargs(process.argv.slice(2)).option("force", { type: "boolean" }).parse();
+    const argv = await yargs(process.argv.slice(2))
+      .option("force", { type: "boolean" })
+      .parserConfiguration({ "parse-positional-numbers": false })
+      .parse();
 
     if (argv.hasOwnProperty("chain")) {
       this._config.chain = argv.chain as string;
@@ -248,7 +251,7 @@ export class TaskCliRunner {
           if (argspec) {
             parsedArgs = yargs(taskArgs.map((a) => a.toString()))
               .command(`* ${argspec}`, false)
-              .parserConfiguration({ "parse-positional-numbers": false })
+              .parserConfiguration({ "parse-numbers": false })
               .parse();
           }
 

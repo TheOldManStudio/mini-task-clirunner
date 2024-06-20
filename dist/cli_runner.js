@@ -92,7 +92,10 @@ class TaskCliRunner {
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            const argv = yield (0, yargs_1.default)(process.argv.slice(2)).option("force", { type: "boolean" }).parse();
+            const argv = yield (0, yargs_1.default)(process.argv.slice(2))
+                .option("force", { type: "boolean" })
+                .parserConfiguration({ "parse-positional-numbers": false })
+                .parse();
             if (argv.hasOwnProperty("chain")) {
                 this._config.chain = argv.chain;
             }
@@ -203,7 +206,7 @@ class TaskCliRunner {
                         if (argspec) {
                             parsedArgs = (0, yargs_1.default)(taskArgs.map((a) => a.toString()))
                                 .command(`* ${argspec}`, false)
-                                .parserConfiguration({ "parse-positional-numbers": false })
+                                .parserConfiguration({ "parse-numbers": false })
                                 .parse();
                         }
                         let timeoutId;
