@@ -248,6 +248,7 @@ export class TaskCliRunner {
           if (argspec) {
             parsedArgs = yargs(taskArgs.map((a) => a.toString()))
               .command(`* ${argspec}`, false)
+              .parserConfiguration({ "parse-numbers": false })
               .parse();
           }
 

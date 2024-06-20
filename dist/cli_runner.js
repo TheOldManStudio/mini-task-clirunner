@@ -203,6 +203,7 @@ class TaskCliRunner {
                         if (argspec) {
                             parsedArgs = (0, yargs_1.default)(taskArgs.map((a) => a.toString()))
                                 .command(`* ${argspec}`, false)
+                                .parserConfiguration({ "parse-numbers": false })
                                 .parse();
                         }
                         let timeoutId;
