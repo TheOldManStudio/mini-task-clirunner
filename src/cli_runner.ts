@@ -35,12 +35,15 @@ export class TaskCliRunner {
   private _run: number = 0;
   private _failed: number = 0;
 
+  private _timeoutId: string | number | NodeJS.Timeout;
+
   constructor() {
     process.on("unhandledRejection", (reason: unknown) => {
       console.log(red("warn:"), reason);
     });
 
     process.on("SIGINT", () => {
+      this._graceful();
       this._result();
       exit(1);
     });
@@ -61,6 +64,10 @@ export class TaskCliRunner {
     const reportFile = this._buildRecordFilePath(taskId);
 
     return findRecordById(reportFile, userId);
+  }
+
+  private _graceful() {
+    if (this._timeoutId) clearTimeout(this._timeoutId);
   }
 
   private _result() {
@@ -255,11 +262,10 @@ export class TaskCliRunner {
               .parse();
           }
 
-          let timeoutId: string | number | NodeJS.Timeout;
           const timeoutErr = "timeout";
           const timeout = (millis: number) =>
             new Promise((resolve, reject) => {
-              timeoutId = setTimeout(reject, millis, timeoutErr);
+              this._timeoutId = setTimeout(reject, millis, timeoutErr);
             });
 
           try {
@@ -278,7 +284,7 @@ export class TaskCliRunner {
 
             console.log(green("done"));
           } finally {
-            if (timeoutId) clearTimeout(timeoutId);
+            if (this._timeoutId) clearTimeout(this._timeoutId);
           }
 
           // handling delay

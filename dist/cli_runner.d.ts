@@ -9,10 +9,12 @@ export declare class TaskCliRunner {
     private _config;
     private _run;
     private _failed;
+    private _timeoutId;
     constructor();
     setAutoChainHandler(handler: AutoChainHandler): void;
     private _buildRecordFilePath;
     private _readTaskRecord;
+    private _graceful;
     private _result;
     private _usage;
     private _idlistUsage;

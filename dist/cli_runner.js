@@ -33,6 +33,7 @@ class TaskCliRunner {
             console.log((0, safe_1.red)("warn:"), reason);
         });
         process.on("SIGINT", () => {
+            this._graceful();
             this._result();
             (0, process_1.exit)(1);
         });
@@ -50,6 +51,10 @@ class TaskCliRunner {
             const reportFile = this._buildRecordFilePath(taskId);
             return (0, csv_1.findRecordById)(reportFile, userId);
         });
+    }
+    _graceful() {
+        if (this._timeoutId)
+            clearTimeout(this._timeoutId);
     }
     _result() {
         console.log();
@@ -209,10 +214,9 @@ class TaskCliRunner {
                                 .parserConfiguration({ "parse-numbers": false })
                                 .parse();
                         }
-                        let timeoutId;
                         const timeoutErr = "timeout";
                         const timeout = (millis) => new Promise((resolve, reject) => {
-                            timeoutId = setTimeout(reject, millis, timeoutErr);
+                            this._timeoutId = setTimeout(reject, millis, timeoutErr);
                         });
                         try {
                             let result = yield Promise.race([timeout(taskTimeout), func(user, context, parsedArgs)]);
@@ -225,8 +229,8 @@ class TaskCliRunner {
                             console.log((0, safe_1.green)("done"));
                         }
                         finally {
-                            if (timeoutId)
-                                clearTimeout(timeoutId);
+                            if (this._timeoutId)
+                                clearTimeout(this._timeoutId);
                         }
                         // handling delay
                         if (delayspec && (j < tasks.length - 1 || i < ids.length - 1)) {
